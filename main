@@ -1,0 +1,122 @@
+// src/components/SearchBar.js
+import React, { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+
+const SearchBar = ({ onSearch }) => {
+  const [query, setQuery] = useState('');
+
+  const handleSearch = () => {
+    onSearch(query);
+  };
+
+  return (
+    <div style={{ display: 'flex', marginBottom: '20px' }}>
+      <TextField
+        label="Search"
+        variant="outlined"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ marginRight: '10px' }}
+      />
+      <Button variant="contained" color="primary" onClick={handleSearch}>
+        Search
+      </Button>
+    </div>
+  );
+};
+
+export default SearchBar;
+
+
+
+// src/components/Graph.js
+import React from 'react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
+} from 'recharts';
+
+const Graph = ({ data }) => {
+  return (
+    <LineChart
+      width={600}
+      height={300}
+      data={data}
+      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="date" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Line type="monotone" dataKey="price" stroke="#8884d8" activeDot={{ r: 8 }} />
+    </LineChart>
+  );
+};
+
+export default Graph;
+
+
+
+// src/components/Watchlist.js
+import React from 'react';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+
+const Watchlist = ({ watchlist, removeItem }) => {
+  return (
+    <List>
+      {watchlist.map((item, index) => (
+        <ListItem button key={index} onClick={() => removeItem(item)}>
+          <ListItemText primary={item} />
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+
+export default Watchlist;
+
+
+// server/server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",  // Replace with your React app URL
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+
+  socket.on('search', (query) => {
+    // Fetch data based on query and emit it to the client
+    const data = fetchDataBasedOnQuery(query);  // Implement this function
+    socket.emit('data', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+});
+
+const fetchDataBasedOnQuery = (query) => {
+  // Simulate fetching data based on the query
+  return [
+    { date: '2024-01-01', price: 100 },
+    { date: '2024-01-02', price: 110 },
+    { date: '2024-01-03', price: 105 }
+  ];
+};
+
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
