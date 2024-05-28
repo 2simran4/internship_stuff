@@ -290,3 +290,97 @@ export default SearchBar;
   padding: 10px;
 }
 
+// src/SearchBar.js
+import React, { useState } from 'react';
+import './SearchBar.css';
+
+const SearchBar = () => {
+  const suggestions = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry', 'Fig', 'Grape', 'Honeydew'];
+  
+  const [query, setQuery] = useState('');
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(0);
+
+  const handleChange = (e) => {
+    const userInput = e.target.value;
+    setQuery(userInput);
+
+    const filtered = suggestions.filter(suggestion =>
+      suggestion.toLowerCase().includes(userInput.toLowerCase())
+    );
+
+    setFilteredSuggestions(filtered);
+    setShowSuggestions(true);
+    setActiveSuggestion(0);
+  };
+
+  const handleClick = (e) => {
+    setQuery(e.currentTarget.innerText);
+    setFilteredSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setQuery(filteredSuggestions[activeSuggestion]);
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+    } else if (e.key === 'ArrowUp') {
+      if (activeSuggestion === 0) {
+        return;
+      }
+      setActiveSuggestion(activeSuggestion - 1);
+    } else if (e.key === 'ArrowDown') {
+      if (activeSuggestion === filteredSuggestions.length - 1) {
+        return;
+      }
+      setActiveSuggestion(activeSuggestion + 1);
+    }
+  };
+
+  const renderSuggestions = () => {
+    if (showSuggestions && query) {
+      if (filteredSuggestions.length) {
+        return (
+          <ul className="suggestions">
+            {filteredSuggestions.map((suggestion, index) => {
+              let className;
+              if (index === activeSuggestion) {
+                className = "suggestion-active";
+              }
+              return (
+                <li className={className} key={suggestion} onClick={handleClick}>
+                  {suggestion}
+                </li>
+              );
+            })}
+          </ul>
+        );
+      } else {
+        return (
+          <div className="no-suggestions">
+            <em>No suggestions, you're on your own!</em>
+          </div>
+        );
+      }
+    }
+    return null;
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        value={query}
+      />
+      {renderSuggestions()}
+    </div>
+  );
+};
+
+export default SearchBar;
+
+
