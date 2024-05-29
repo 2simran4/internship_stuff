@@ -482,3 +482,44 @@ export default Footer;
   }
 }
 
+import React from 'react';
+
+const HtmlLink = () => {
+  return (
+    <a href="/your-file.html" target="_blank" rel="noopener noreferrer">
+      Open HTML File
+    </a>
+  );
+};
+
+export default HtmlLink;
+
+import React from 'react';
+
+const HtmlViewer = () => {
+  return (
+    <iframe
+      src="/your-file.html"
+      title="Your HTML File"
+      style={{ width: '100%', height: '500px', border: 'none' }}
+    />
+  );
+};
+
+export default HtmlViewer;// App.js
+import React from 'react';
+import HtmlViewer from './HtmlViewer';
+import HtmlLink from './HtmlLink';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>Include HTML File in React</h1>
+      <HtmlViewer />
+      <HtmlLink />
+    </div>
+  );
+}
+
+export default App;
+
