@@ -1,0 +1,186 @@
+/* src/Navbar.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  background: #333;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  width: 100%;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  height: 60px;
+  width: 100%;
+  max-width: 1300px;
+}
+
+.nav-logo {
+  color: #fff;
+  justify-self: start;
+  margin-left: 20px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 24px;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  text-align: center;
+}
+
+.nav-item {
+  height: 60px;
+}
+
+.nav-links {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0 20px;
+  height: 100%;
+  cursor: pointer;
+}
+
+.nav-links:hover {
+  background-color: #575757;
+  border-radius: 4px;
+}
+
+.nav-icon {
+  display: none;
+}
+
+.nav-search {
+  display: flex;
+  align-items: center;
+}
+
+.nav-search-input {
+  padding: 5px;
+  border: none;
+  border-radius: 4px;
+}
+
+.nav-search-button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+/* Responsive styling */
+@media screen and (max-width: 960px) {
+  .nav-icon {
+    display: block;
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    cursor: pointer;
+    color: #fff;
+  }
+
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - 60px);
+    position: absolute;
+    top: 60px;
+    left: -100%;
+    opacity: 1;
+    transition: all 0.5s ease;
+    background: #333;
+  }
+
+  .nav-menu.active {
+    background: #333;
+    left: 0;
+    opacity: 1;
+    transition: all 0.5s ease;
+    z-index: 1;
+  }
+
+  .nav-item {
+    width: 100%;
+  }
+
+  .nav-links {
+    padding: 2rem;
+    width: 100%;
+    display: table;
+  }
+
+  .nav-search {
+    padding: 2rem;
+  }
+}
+// src/Navbar.js
+import React, { useState } from 'react';
+import { FaBars, FaTimes, FaSearch } from 'react-icons/fa';
+import './Navbar.css';
+
+const Navbar = () => {
+  const [click, setClick] = useState(false);
+
+  const handleClick = () => setClick(!click);
+
+  return (
+    <nav className="navbar">
+      <div className="nav-container">
+        <a href="#" className="nav-logo">
+          Logo
+        </a>
+        <div className="nav-icon" onClick={handleClick}>
+          {click ? <FaTimes /> : <FaBars />}
+        </div>
+        <ul className={click ? 'nav-menu active' : 'nav-menu'}>
+          <li className="nav-item">
+            <a href="#" className="nav-links">
+              Home
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-links">
+              About
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-links">
+              Services
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-links">
+              Contact
+            </a>
+          </li>
+          <li className="nav-item">
+            <div className="nav-search">
+              <input type="text" className="nav-search-input" placeholder="Search..." />
+              <button className="nav-search-button">
+                <FaSearch />
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
