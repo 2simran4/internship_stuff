@@ -4,7 +4,7 @@ import { createChart } from 'lightweight-charts';
 const ChartComponent = () => {
   const candlestickChartRef = useRef();
   const rsiChartRef = useRef();
-  const [crosshairPosition, setCrosshairPosition] = useState(null);
+  const [cursorPosition, setCursorPosition] = useState(null);
 
   // Dummy data for candlestick chart
   const getCandlestickData = async () => {
@@ -25,9 +25,20 @@ const ChartComponent = () => {
   };
 
   useEffect(() => {
-    const createSeparateChart = (containerRef, seriesType, seriesOptions, dataMapper) => {
+    const createChartWithPane = (containerRef, seriesType, seriesOptions, dataMapper, paneIndex) => {
       const chart = createChart(containerRef.current, {
-        // Chart configuration options
+        layout: {
+          backgroundColor: '#ffffff',
+          textColor: '#000',
+          grid: {
+            vertLines: {
+              visible: false,
+            },
+          },
+        },
+        priceScale: {
+          position: 'right',
+        },
       });
 
       const series = chart[seriesType](seriesOptions);
@@ -45,30 +56,32 @@ const ChartComponent = () => {
       return { chart, series };
     };
 
-    const candlestickChart = createSeparateChart(
+    const candlestickChart = createChartWithPane(
       candlestickChartRef,
       'addCandlestickSeries',
-      {},
+      { color: 'blue', lineWidth: 2 },
       d => ({
         time: d.timestamp,
         open: d.open,
         high: d.high,
         low: d.low,
         close: d.close,
-      })
+      }),
+      0 // Pane index
     );
 
-    const rsiChart = createSeparateChart(
+    const rsiChart = createChartWithPane(
       rsiChartRef,
       'addLineSeries',
-      { color: 'purple', lineWidth: 1 },
+      { color: 'red', lineWidth: 2 },
       d => ({
         time: d.timestamp,
         value: d.rsi,
-      })
+      }),
+      1 // Pane index
     );
 
-    const synchronizeCrosshair = () => {
+    const synchronizeCursorPosition = () => {
       const onMouseMove = (e) => {
         const candlestickChartInstance = candlestickChartRef.current?.chart;
         const rsiChartInstance = rsiChartRef.current?.chart;
@@ -76,24 +89,29 @@ const ChartComponent = () => {
         if (!candlestickChartInstance || !rsiChartInstance) return;
 
         const rect = candlestickChartInstance._element.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left; // Manually calculate offsetX
-        const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
+        const clientX = e.clientX || e.touches?.[0]?.clientX; // Use clientX or touch event's clientX
+        const clientY = e.clientY || e.touches?.[0]?.clientY; // Use clientY or touch event's clientY
 
-        setCrosshairPosition({ time });
+        if (!clientX || !clientY) return; // Check if clientX or clientY are undefined
 
-        // Synchronize crosshair position in both charts
-        const candlestickSeries = candlestickChartInstance.getSeriesById('crosshair');
-        if (candlestickSeries) {
-          candlestickSeries.setData([{ time, value: NaN }, { time, value: NaN }]);
-        }
-        const rsiSeries = rsiChartInstance.getSeriesById('crosshair');
-        if (rsiSeries) {
-          rsiSeries.setData([{ time, value: NaN }, { time, value: NaN }]);
+        const offsetX = clientX - rect.left; // Manually calculate offsetX
+        const offsetY = clientY - rect.top; // Manually calculate offsetY
+
+        if (offsetX >= 0 && offsetX <= rect.width && offsetY >= 0 && offsetY <= rect.height) {
+          // Mouse is inside candlestick chart
+          const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
+          setCursorPosition({ time });
+          rsiChartInstance.removeSeries('crosshairLine');
+        } else {
+          // Mouse is inside RSI chart
+          const time = rsiChartInstance.timeScale().coordinateToTime(offsetX);
+          setCursorPosition({ time });
+          candlestickChartInstance.removeSeries('crosshairLine');
         }
       };
 
       const onMouseLeave = () => {
-        setCrosshairPosition(null);
+        setCursorPosition(null);
       };
 
       document.addEventListener('mousemove', onMouseMove);
@@ -105,7 +123,7 @@ const ChartComponent = () => {
       };
     };
 
-    synchronizeCrosshair();
+    synchronizeCursorPosition();
 
     return () => {
       candlestickChart.chart.remove();
@@ -113,12 +131,50 @@ const ChartComponent = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!cursorPosition) return;
+
+    const candlestickChartInstance = candlestickChartRef.current?.chart;
+    const rsiChartInstance = rsiChartRef.current?.chart;
+
+    if (!candlestickChartInstance || !rsiChartInstance) return;
+
+    const sharedSeriesOptions = {
+      color: 'black',
+      lineWidth: 1,
+      crossHairMarkerVisible: false,
+    };
+
+    const candlestickSeries = candlestickChartInstance.addLineSeries({
+      ...sharedSeriesOptions,
+      priceLineVisible: false,
+      priceFormat: {
+        type: 'custom',
+        formatter: () => '',
+      },
+    });
+
+    const rsiSeries = rsiChartInstance.addLineSeries({
+      ...sharedSeriesOptions,
+      priceLineVisible: false,
+      priceFormat: {
+        type: 'custom',
+        formatter: () => '',
+      },
+    });
+
+    candlestickSeries.setId('crosshair');
+    rsiSeries.setId('crosshair');
+
+    candlestickSeries.setData([{ time: cursorPosition.time, value: NaN }, { time: cursorPosition.time, value: NaN }]);
+    rsiSeries.setData([{ time: cursorPosition.time, value: NaN }, { time: cursorPosition.time, value: NaN }]);
+
+    return () => {
+      candlestickChartInstance.removeSeries(candlestickSeries);
+      rsiChartInstance.removeSeries(rsiSeries);
+    };
+  }, [cursorPosition]);
+
   return (
     <div>
-      <div ref={candlestickChartRef} style={{ width: '100vw', height: '50vh' }} />
-      <div ref={rsiChartRef} style={{ width: '100vw', height: '50vh' }} />
-    </div>
-  );
-};
-
-export default ChartComponent;
+      <div ref={candlestickChartRef} style={{
