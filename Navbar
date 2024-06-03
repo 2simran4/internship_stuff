@@ -800,3 +800,25 @@ const ChartComponent = () => {
 };
 
 export default ChartComponent;
+const onMouseMove = (e) => {
+  const candlestickChartInstance = candlestickChartRef.current?.chart;
+  const rsiChartInstance = rsiChartRef.current?.chart;
+
+  if (!candlestickChartInstance || !rsiChartInstance) return;
+
+  const rect = candlestickChartInstance._element.getBoundingClientRect();
+  const offsetX = e.clientX - rect.left; // Manually calculate offsetX
+  const offsetY = e.clientY - rect.top; // Manually calculate offsetY
+
+  if (offsetX >= 0 && offsetX <= rect.width && offsetY >= 0 && offsetY <= rect.height) {
+    // Mouse is inside candlestick chart
+    const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
+    setCrosshairPosition({ time, chart: 'candlestick' });
+    rsiChartInstance.removeSeries('crosshairLine');
+  } else {
+    // Mouse is inside RSI chart
+    const time = rsiChartInstance.timeScale().coordinateToTime(offsetX);
+    setCrosshairPosition({ time, chart: 'rsi' });
+    candlestickChartInstance.removeSeries('crosshairLine');
+  }
+};
