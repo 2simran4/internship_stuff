@@ -1,180 +1,77 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { createChart } from 'lightweight-charts';
+import React from 'react';
+import Chart from 'chart.js/auto';
+
+const CandlestickChart = ({ candlestickData }) => {
+  const canvasRef = React.useRef();
+
+  React.useEffect(() => {
+    if (!candlestickData || candlestickData.length === 0) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    new Chart(ctx, {
+      type: 'candlestick',
+      data: {
+        datasets: [{
+          data: candlestickData,
+          label: 'Candlestick Data'
+        }]
+      },
+      options: {
+        // Customize options
+      }
+    });
+  }, [candlestickData]);
+
+  return <canvas ref={canvasRef}></canvas>;
+};
+
+const RSIChart = ({ rsiData }) => {
+  const canvasRef = React.useRef();
+
+  React.useEffect(() => {
+    if (!rsiData || rsiData.length === 0) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          data: rsiData,
+          label: 'RSI Data'
+        }]
+      },
+      options: {
+        // Customize options
+      }
+    });
+  }, [rsiData]);
+
+  return <canvas ref={canvasRef}></canvas>;
+};
 
 const ChartComponent = () => {
-  const candlestickChartRef = useRef();
-  const rsiChartRef = useRef();
-  const [cursorPosition, setCursorPosition] = useState(null);
+  // Static candlestick data
+  const candlestickData = [
+    { t: 1, o: 100, h: 120, l: 90, c: 110 },
+    { t: 2, o: 110, h: 130, l: 95, c: 115 },
+    { t: 3, o: 115, h: 135, l: 100, c: 125 },
+  ];
 
-  // Dummy data for candlestick chart
-  const getCandlestickData = async () => {
-    return [
-      { timestamp: 1625097600, open: 150.50, high: 155.75, low: 149.20, close: 154.30 },
-      { timestamp: 1625184000, open: 154.40, high: 158.00, low: 153.00, close: 157.60 },
-      // Add more data points as needed
-    ];
-  };
-
-  // Dummy data for RSI chart
-  const getRSIData = async () => {
-    return [
-      { timestamp: 1625097600, rsi: 30 },
-      { timestamp: 1625184000, rsi: 32 },
-      // Add more data points as needed
-    ];
-  };
-
-  useEffect(() => {
-    const createChartWithPane = (containerRef, seriesType, seriesOptions, dataMapper, paneIndex) => {
-      const chart = createChart(containerRef.current, {
-        layout: {
-          backgroundColor: '#ffffff',
-          textColor: '#000',
-          grid: {
-            vertLines: {
-              visible: false,
-            },
-          },
-        },
-        priceScale: {
-          position: 'right',
-        },
-      });
-
-      const series = chart[seriesType](seriesOptions);
-
-      const fetchAndRenderData = async () => {
-        const data = seriesType === 'addCandlestickSeries' ? await getCandlestickData() : await getRSIData();
-        const formattedData = data.map(dataMapper);
-        series.setData(formattedData);
-      };
-
-      fetchAndRenderData();
-
-      // Resize observer and other setup...
-
-      return { chart, series };
-    };
-
-    const candlestickChart = createChartWithPane(
-      candlestickChartRef,
-      'addCandlestickSeries',
-      { color: 'blue', lineWidth: 2 },
-      d => ({
-        time: d.timestamp,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close,
-      }),
-      0 // Pane index
-    );
-
-    const rsiChart = createChartWithPane(
-      rsiChartRef,
-      'addLineSeries',
-      { color: 'red', lineWidth: 2 },
-      d => ({
-        time: d.timestamp,
-        value: d.rsi,
-      }),
-      1 // Pane index
-    );
-
-    const synchronizeCursorPosition = () => {
-      const onMouseMove = (e) => {
-        const candlestickChartInstance = candlestickChartRef.current?.chart;
-        const rsiChartInstance = rsiChartRef.current?.chart;
-
-        if (!candlestickChartInstance || !rsiChartInstance) return;
-
-        const rect = candlestickChartInstance._element.getBoundingClientRect();
-        const clientX = e.clientX || e.touches?.[0]?.clientX; // Use clientX or touch event's clientX
-        const clientY = e.clientY || e.touches?.[0]?.clientY; // Use clientY or touch event's clientY
-
-        if (!clientX || !clientY) return; // Check if clientX or clientY are undefined
-
-        const offsetX = clientX - rect.left; // Manually calculate offsetX
-        const offsetY = clientY - rect.top; // Manually calculate offsetY
-
-        if (offsetX >= 0 && offsetX <= rect.width && offsetY >= 0 && offsetY <= rect.height) {
-          // Mouse is inside candlestick chart
-          const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
-          setCursorPosition({ time });
-          rsiChartInstance.removeSeries('crosshairLine');
-        } else {
-          // Mouse is inside RSI chart
-          const time = rsiChartInstance.timeScale().coordinateToTime(offsetX);
-          setCursorPosition({ time });
-          candlestickChartInstance.removeSeries('crosshairLine');
-        }
-      };
-
-      const onMouseLeave = () => {
-        setCursorPosition(null);
-      };
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseleave', onMouseLeave);
-
-      return () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseleave', onMouseLeave);
-      };
-    };
-
-    synchronizeCursorPosition();
-
-    return () => {
-      candlestickChart.chart.remove();
-      rsiChart.chart.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!cursorPosition) return;
-
-    const candlestickChartInstance = candlestickChartRef.current?.chart;
-    const rsiChartInstance = rsiChartRef.current?.chart;
-
-    if (!candlestickChartInstance || !rsiChartInstance) return;
-
-    const sharedSeriesOptions = {
-      color: 'black',
-      lineWidth: 1,
-      crossHairMarkerVisible: false,
-    };
-
-    const candlestickSeries = candlestickChartInstance.addLineSeries({
-      ...sharedSeriesOptions,
-      priceLineVisible: false,
-      priceFormat: {
-        type: 'custom',
-        formatter: () => '',
-      },
-    });
-
-    const rsiSeries = rsiChartInstance.addLineSeries({
-      ...sharedSeriesOptions,
-      priceLineVisible: false,
-      priceFormat: {
-        type: 'custom',
-        formatter: () => '',
-      },
-    });
-
-    candlestickSeries.setId('crosshair');
-    rsiSeries.setId('crosshair');
-
-    candlestickSeries.setData([{ time: cursorPosition.time, value: NaN }, { time: cursorPosition.time, value: NaN }]);
-    rsiSeries.setData([{ time: cursorPosition.time, value: NaN }, { time: cursorPosition.time, value: NaN }]);
-
-    return () => {
-      candlestickChartInstance.removeSeries(candlestickSeries);
-      rsiChartInstance.removeSeries(rsiSeries);
-    };
-  }, [cursorPosition]);
+  // Static RSI data
+  const rsiData = [
+    { x: 1, y: 70 },
+    { x: 2, y: 75 },
+    { x: 3, y: 80 },
+  ];
 
   return (
     <div>
-      <div ref={candlestickChartRef} style={{
+      <h1>Candlestick Chart</h1>
+      <CandlestickChart candlestickData={candlestickData} />
+      <h1>RSI Chart</h1>
+      <RSIChart rsiData={rsiData} />
+    </div>
+  );
+};
+
+export default ChartComponent;
