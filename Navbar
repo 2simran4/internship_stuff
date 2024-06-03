@@ -60,14 +60,16 @@ const ChartComponent = () => {
       const crosshairPosition = sourceChart.timeScale().timeToCoordinate(event.time);
       if (crosshairPosition === null) return;
 
-      const price = targetChart.priceScale().priceToCoordinate(event.price);
+      const price = event.price;
+      const yAxisHeight = targetChart.height() - targetChart.timeScale().height();
+      const yCoordinate = targetChart.priceToCoordinate(price, yAxisHeight);
 
-      if (price !== null) {
+      if (yCoordinate !== null) {
         const targetCrosshairEvent = {
           time: event.time,
           point: {
             x: crosshairPosition,
-            y: price,
+            y: yCoordinate,
           },
         };
         targetChart.setCrosshairPosition(targetCrosshairEvent.point);
