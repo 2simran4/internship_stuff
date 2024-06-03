@@ -77,18 +77,18 @@ const ChartComponent = () => {
 
         const rect = candlestickChartInstance._element.getBoundingClientRect();
         const offsetX = e.clientX - rect.left; // Manually calculate offsetX
-        const offsetY = e.clientY - rect.top; // Manually calculate offsetY
+        const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
 
-        if (offsetX >= 0 && offsetX <= rect.width && offsetY >= 0 && offsetY <= rect.height) {
-          // Mouse is inside candlestick chart
-          const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX);
-          setCrosshairPosition({ time, chart: 'candlestick' });
-          rsiChartInstance.removeSeries('crosshairLine');
-        } else {
-          // Mouse is inside RSI chart
-          const time = rsiChartInstance.timeScale().coordinateToTime(offsetX);
-          setCrosshairPosition({ time, chart: 'rsi' });
-          candlestickChartInstance.removeSeries('crosshairLine');
+        setCrosshairPosition({ time });
+
+        // Synchronize crosshair position in both charts
+        const candlestickSeries = candlestickChartInstance.getSeriesById('crosshair');
+        if (candlestickSeries) {
+          candlestickSeries.setData([{ time, value: NaN }, { time, value: NaN }]);
+        }
+        const rsiSeries = rsiChartInstance.getSeriesById('crosshair');
+        if (rsiSeries) {
+          rsiSeries.setData([{ time, value: NaN }, { time, value: NaN }]);
         }
       };
 
@@ -112,46 +112,6 @@ const ChartComponent = () => {
       rsiChart.chart.remove();
     };
   }, []);
-
-  useEffect(() => {
-    if (!crosshairPosition) return;
-
-    const candlestickChartInstance = candlestickChartRef.current?.chart;
-    const rsiChartInstance = rsiChartRef.current?.chart;
-
-    if (!candlestickChartInstance || !rsiChartInstance) return;
-
-    if (crosshairPosition.chart === 'candlestick') {
-      const candlestickSeries = candlestickChartInstance.addLineSeries({
-        color: 'rgba(0, 0, 0, 0.5)',
-        lineWidth: 1,
-        priceLineVisible: false,
-        priceFormat: {
-          type: 'custom',
-          formatter: () => '',
-        },
-      });
-
-      candlestickSeries.setData([{ time: crosshairPosition.time, value: NaN }, { time: crosshairPosition.time, value: NaN }]);
-    } else {
-      const rsiSeries = rsiChartInstance.addLineSeries({
-        color: 'rgba(0, 0, 0, 0.5)',
-        lineWidth: 1,
-        priceLineVisible: false,
-        priceFormat: {
-          type: 'custom',
-          formatter: () => '',
-        },
-      });
-
-      rsiSeries.setData([{ time: crosshairPosition.time, value: NaN }, { time: crosshairPosition.time, value: NaN }]);
-    }
-
-    return () => {
-      candlestickChartInstance.removeSeries('crosshairLine');
-      rsiChartInstance.removeSeries('crosshairLine');
-    };
-  }, [crosshairPosition]);
 
   return (
     <div>
