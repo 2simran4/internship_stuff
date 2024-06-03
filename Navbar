@@ -76,13 +76,8 @@ const ChartComponent = () => {
         if (!candlestickChartInstance || !rsiChartInstance) return;
 
         const rect = candlestickChartInstance._element.getBoundingClientRect();
-        const clientX = e.clientX || e.touches?.[0]?.clientX; // Use clientX or touch event's clientX
-        const clientY = e.clientY || e.touches?.[0]?.clientY; // Use clientY or touch event's clientY
-
-        if (!clientX || !clientY) return; // Check if clientX or clientY are undefined
-
-        const offsetX = clientX - rect.left; // Manually calculate offsetX
-        const offsetY = clientY - rect.top; // Manually calculate offsetY
+        const offsetX = e.clientX - rect.left; // Manually calculate offsetX
+        const offsetY = e.clientY - rect.top; // Manually calculate offsetY
 
         if (offsetX >= 0 && offsetX <= rect.width && offsetY >= 0 && offsetY <= rect.height) {
           // Mouse is inside candlestick chart
@@ -99,20 +94,14 @@ const ChartComponent = () => {
 
       const onMouseLeave = () => {
         setCrosshairPosition(null);
-        candlestickChartRef.current?.chart?.removeSeries('crosshairLine');
-        rsiChartRef.current?.chart?.removeSeries('crosshairLine');
       };
 
-      candlestickChartRef.current?.addEventListener('mousemove', onMouseMove);
-      rsiChartRef.current?.addEventListener('mousemove', onMouseMove);
-      candlestickChartRef.current?.addEventListener('mouseleave', onMouseLeave);
-      rsiChartRef.current?.addEventListener('mouseleave', onMouseLeave);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseleave', onMouseLeave);
 
       return () => {
-        candlestickChartRef.current?.removeEventListener('mousemove', onMouseMove);
-        rsiChartRef.current?.removeEventListener('mousemove', onMouseMove);
-        candlestickChartRef.current?.removeEventListener('mouseleave', onMouseLeave);
-        rsiChartRef.current?.removeEventListener('mouseleave', onMouseLeave);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseleave', onMouseLeave);
       };
     };
 
