@@ -54,24 +54,24 @@ const ChartComponent = () => {
     const rsiSeries = rsiChart.addLineSeries({ color: 'purple' });
     rsiSeries.setData(rsiData);
 
-    const syncCrosshair = (event) => {
-      if (!event || !event.time) return;
-
-      const price = event.seriesData.get(candlestickSeries);
-      const coordinate = candlestickChart.timeScale().timeToCoordinate(event.time);
-      const rsiCoordinate = rsiChart.timeScale().timeToCoordinate(event.time);
-
-      if (coordinate !== null) {
-        rsiChart.timeScale().setCrosshair({ time: event.time });
-      }
-
-      if (rsiCoordinate !== null) {
-        candlestickChart.timeScale().setCrosshair({ time: event.time });
-      }
+    const synchronizeCrosshair = (event, sourceChart, targetChart) => {
+      const crosshair = event ? { time: event.time } : null;
+      targetChart.applyOptions({
+        crosshair: {
+          vertLine: { visible: !!crosshair },
+          horzLine: { visible: !!crosshair },
+        },
+      });
+      targetChart.setCrosshair(crosshair);
     };
 
-    candlestickChart.subscribeCrosshairMove(syncCrosshair);
-    rsiChart.subscribeCrosshairMove(syncCrosshair);
+    candlestickChart.subscribeCrosshairMove((event) => {
+      synchronizeCrosshair(event, candlestickChart, rsiChart);
+    });
+
+    rsiChart.subscribeCrosshairMove((event) => {
+      synchronizeCrosshair(event, rsiChart, candlestickChart);
+    });
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
