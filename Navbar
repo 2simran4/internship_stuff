@@ -5,22 +5,20 @@ const ChartComponent = () => {
   const candlestickChartRef = useRef();
   const rsiChartRef = useRef();
 
-  const getCandlestickData = () => [
-    { time: 1625097600, open: 100, high: 110, low: 90, close: 105 },
-    { time: 1625184000, open: 105, high: 115, low: 95, close: 110 },
-    { time: 1625270400, open: 110, high: 120, low: 100, close: 115 },
-    { time: 1625356800, open: 115, high: 125, low: 105, close: 120 },
-    { time: 1625443200, open: 120, high: 130, low: 110, close: 125 },
-    // Add more data points as needed
+  const candlestickData = [
+    { time: '2021-06-30', open: 100, high: 110, low: 90, close: 105 },
+    { time: '2021-07-01', open: 105, high: 115, low: 95, close: 110 },
+    { time: '2021-07-02', open: 110, high: 120, low: 100, close: 115 },
+    { time: '2021-07-03', open: 115, high: 125, low: 105, close: 120 },
+    { time: '2021-07-04', open: 120, high: 130, low: 110, close: 125 },
   ];
 
-  const getRSIData = () => [
-    { time: 1625097600, value: 30 },
-    { time: 1625184000, value: 35 },
-    { time: 1625270400, value: 40 },
-    { time: 1625356800, value: 45 },
-    { time: 1625443200, value: 50 },
-    // Add more data points as needed
+  const rsiData = [
+    { time: '2021-06-30', value: 30 },
+    { time: '2021-07-01', value: 35 },
+    { time: '2021-07-02', value: 40 },
+    { time: '2021-07-03', value: 45 },
+    { time: '2021-07-04', value: 50 },
   ];
 
   useEffect(() => {
@@ -51,22 +49,29 @@ const ChartComponent = () => {
     });
 
     const candlestickSeries = candlestickChart.addCandlestickSeries();
-    candlestickSeries.setData(getCandlestickData());
+    candlestickSeries.setData(candlestickData);
 
     const rsiSeries = rsiChart.addLineSeries({ color: 'purple' });
-    rsiSeries.setData(getRSIData());
+    rsiSeries.setData(rsiData);
 
-    const synchronizeCrosshair = (event) => {
-      const crosshairSource = event.seriesData;
-      if (crosshairSource) {
-        const time = event.time;
-        candlestickChart.timeScale().setVisibleRange({ from: time - 10, to: time + 10 });
-        rsiChart.timeScale().setVisibleRange({ from: time - 10, to: time + 10 });
+    const syncCrosshair = (event) => {
+      if (!event || !event.time) return;
+
+      const price = event.seriesData.get(candlestickSeries);
+      const coordinate = candlestickChart.timeScale().timeToCoordinate(event.time);
+      const rsiCoordinate = rsiChart.timeScale().timeToCoordinate(event.time);
+
+      if (coordinate !== null) {
+        rsiChart.timeScale().setCrosshair({ time: event.time });
+      }
+
+      if (rsiCoordinate !== null) {
+        candlestickChart.timeScale().setCrosshair({ time: event.time });
       }
     };
 
-    candlestickChart.subscribeCrosshairMove(synchronizeCrosshair);
-    rsiChart.subscribeCrosshairMove(synchronizeCrosshair);
+    candlestickChart.subscribeCrosshairMove(syncCrosshair);
+    rsiChart.subscribeCrosshairMove(syncCrosshair);
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
@@ -83,6 +88,8 @@ const ChartComponent = () => {
 
     return () => {
       resizeObserver.disconnect();
+      candlestickChart.remove();
+      rsiChart.remove();
     };
   }, []);
 
