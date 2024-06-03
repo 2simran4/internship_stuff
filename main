@@ -2014,3 +2014,40 @@ const ChartComponent = () => {
 };
 
 export default ChartComponent;
+const synchronizeCrosshair = (chart1, chart2) => {
+  let crosshairVisible = false;
+
+  chart1.subscribeCrosshairMove(param => {
+    if (!param || !param.time || !param.point) {
+      if (crosshairVisible) {
+        chart2.applyOptions({
+          crosshair: { visible: false },
+        });
+        crosshairVisible = false;
+      }
+      return;
+    }
+    crosshairVisible = true;
+    chart2.applyOptions({
+      crosshair: { visible: true },
+    });
+    chart2.moveCrosshair(param.point);
+  });
+
+  chart2.subscribeCrosshairMove(param => {
+    if (!param || !param.time || !param.point) {
+      if (crosshairVisible) {
+        chart1.applyOptions({
+          crosshair: { visible: false },
+        });
+        crosshairVisible = false;
+      }
+      return;
+    }
+    crosshairVisible = true;
+    chart1.applyOptions({
+      crosshair: { visible: true },
+    });
+    chart1.moveCrosshair(param.point);
+  });
+};
