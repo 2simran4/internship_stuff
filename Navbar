@@ -184,3 +184,150 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+import React, { useEffect, useRef, useState } from 'react';
+import { createChart } from 'lightweight-charts';
+
+const ChartComponent = () => {
+  const candlestickChartRef = useRef();
+  const rsiChartRef = useRef();
+  const [crosshairPosition, setCrosshairPosition] = useState(null);
+
+  const getData = async () => {
+    // Your data fetching logic here
+  };
+
+  useEffect(() => {
+    const createSeparateChart = (containerRef, seriesType, seriesOptions, dataMapper) => {
+      const chart = createChart(containerRef.current, {
+        // Chart configuration options
+      });
+
+      const series = chart[seriesType](seriesOptions);
+
+      const fetchAndRenderData = async () => {
+        const data = await getData();
+        const formattedData = data.map(dataMapper);
+        series.setData(formattedData);
+      };
+
+      fetchAndRenderData();
+
+      // Resize observer and other setup...
+
+      return { chart, series };
+    };
+
+    const candlestickChart = createSeparateChart(
+      candlestickChartRef,
+      'addCandlestickSeries',
+      {},
+      d => ({
+        // Candlestick series data mapping
+      })
+    );
+
+    const rsiChart = createSeparateChart(
+      rsiChartRef,
+      'addLineSeries',
+      { color: 'purple', lineWidth: 1 },
+      d => ({
+        // RSI series data mapping
+      })
+    );
+
+    const synchronizeCrosshair = () => {
+      const onMouseMove = (e) => {
+        const candlestickChartInstance = candlestickChart.chart;
+        const rsiChartInstance = rsiChart.chart;
+
+        const { offsetX, offsetY } = e.nativeEvent;
+        const { left, top, width, height } = candlestickChartInstance._element.getBoundingClientRect();
+
+        if (offsetX >= left && offsetX <= left + width && offsetY >= top && offsetY <= top + height) {
+          // Mouse is inside candlestick chart
+          const time = candlestickChartInstance.timeScale().coordinateToTime(offsetX - left);
+          setCrosshairPosition({ time, chart: 'candlestick' });
+          rsiChartInstance.removeSeries('crosshairLine');
+        } else {
+          // Mouse is inside RSI chart
+          const time = rsiChartInstance.timeScale().coordinateToTime(offsetX - left);
+          setCrosshairPosition({ time, chart: 'rsi' });
+          candlestickChartInstance.removeSeries('crosshairLine');
+        }
+      };
+
+      const onMouseLeave = () => {
+        setCrosshairPosition(null);
+        candlestickChart.chart.removeSeries('crosshairLine');
+        rsiChart.chart.removeSeries('crosshairLine');
+      };
+
+      candlestickChartRef.current.addEventListener('mousemove', onMouseMove);
+      rsiChartRef.current.addEventListener('mousemove', onMouseMove);
+      candlestickChartRef.current.addEventListener('mouseleave', onMouseLeave);
+      rsiChartRef.current.addEventListener('mouseleave', onMouseLeave);
+
+      return () => {
+        candlestickChartRef.current.removeEventListener('mousemove', onMouseMove);
+        rsiChartRef.current.removeEventListener('mousemove', onMouseMove);
+        candlestickChartRef.current.removeEventListener('mouseleave', onMouseLeave);
+        rsiChartRef.current.removeEventListener('mouseleave', onMouseLeave);
+      };
+    };
+
+    synchronizeCrosshair();
+
+    return () => {
+      candlestickChart.chart.remove();
+      rsiChart.chart.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!crosshairPosition) return;
+
+    const candlestickChartInstance = candlestickChartRef.current.chart;
+    const rsiChartInstance = rsiChartRef.current.chart;
+
+    if (crosshairPosition.chart === 'candlestick') {
+      const candlestickSeries = candlestickChartInstance.addLineSeries({
+        color: 'rgba(0, 0, 0, 0.5)',
+        lineWidth: 1,
+        priceLineVisible: false,
+        priceFormat: {
+          type: 'custom',
+          formatter: () => '',
+        },
+      });
+
+      candlestickSeries.setData([{ time: crosshairPosition.time, value: NaN }, { time: crosshairPosition.time, value: NaN }]);
+    } else {
+      const rsiSeries = rsiChartInstance.addLineSeries({
+        color: 'rgba(0, 0, 0, 0.5)',
+        lineWidth: 1,
+        priceLineVisible: false,
+        priceFormat: {
+          type: 'custom',
+          formatter: () => '',
+        },
+      });
+
+      rsiSeries.setData([{ time: crosshairPosition.time, value: NaN }, { time: crosshairPosition.time, value: NaN }]);
+    }
+
+    return () => {
+      candlestickChartInstance.removeSeries('crosshairLine');
+      rsiChartInstance.removeSeries('crosshairLine');
+    };
+  }, [crosshairPosition]);
+
+  return (
+    <div>
+      <div ref={candlestickChartRef} style={{ width: '100vw', height: '50vh' }} />
+      <div ref={rsiChartRef} style={{ width: '100vw', height: '50vh' }} />
+    </div>
+  );
+};
+
+export default ChartComponent;
