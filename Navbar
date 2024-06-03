@@ -6,20 +6,20 @@ const ChartComponent = () => {
   const rsiChartRef = useRef();
 
   const getCandlestickData = () => [
-    { time: '2023-06-01', open: 100, high: 110, low: 90, close: 105 },
-    { time: '2023-06-02', open: 105, high: 115, low: 95, close: 110 },
-    { time: '2023-06-03', open: 110, high: 120, low: 100, close: 115 },
-    { time: '2023-06-04', open: 115, high: 125, low: 105, close: 120 },
-    { time: '2023-06-05', open: 120, high: 130, low: 110, close: 125 },
+    { time: 1625097600, open: 100, high: 110, low: 90, close: 105 },
+    { time: 1625184000, open: 105, high: 115, low: 95, close: 110 },
+    { time: 1625270400, open: 110, high: 120, low: 100, close: 115 },
+    { time: 1625356800, open: 115, high: 125, low: 105, close: 120 },
+    { time: 1625443200, open: 120, high: 130, low: 110, close: 125 },
     // Add more data points as needed
   ];
 
   const getRSIData = () => [
-    { time: '2023-06-01', value: 30 },
-    { time: '2023-06-02', value: 35 },
-    { time: '2023-06-03', value: 40 },
-    { time: '2023-06-04', value: 45 },
-    { time: '2023-06-05', value: 50 },
+    { time: 1625097600, value: 30 },
+    { time: 1625184000, value: 35 },
+    { time: 1625270400, value: 40 },
+    { time: 1625356800, value: 45 },
+    { time: 1625443200, value: 50 },
     // Add more data points as needed
   ];
 
@@ -60,10 +60,8 @@ const ChartComponent = () => {
       const crosshairSource = event.seriesData;
       if (crosshairSource) {
         const time = event.time;
-        const candlestickChartSource = candlestickChart.timeScale();
-        const rsiChartSource = rsiChart.timeScale();
-        candlestickChartSource.setVisibleRange({ from: time - 10, to: time + 10 });
-        rsiChartSource.setVisibleRange({ from: time - 10, to: time + 10 });
+        candlestickChart.timeScale().setVisibleRange({ from: time - 10, to: time + 10 });
+        rsiChart.timeScale().setVisibleRange({ from: time - 10, to: time + 10 });
       }
     };
 
