@@ -61,9 +61,9 @@ const ChartComponent = () => {
       if (crosshairPosition === null) return;
 
       const price = event.price;
-      const containerHeight = targetChartRef.current.clientHeight;
+      const containerHeight = targetChart.container().clientHeight;
       const chartHeight = targetChart.timeScale().height();
-      const yCoordinate = (price / targetChart.priceScale().height()) * chartHeight + chartHeight;
+      const yCoordinate = (price / chartHeight) * containerHeight;
 
       if (yCoordinate !== null) {
         const targetCrosshairEvent = {
