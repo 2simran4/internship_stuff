@@ -2051,3 +2051,72 @@ const synchronizeCrosshair = (chart1, chart2) => {
     chart1.moveCrosshair(param.point);
   });
 };
+
+import React, { useEffect, useRef, useState } from 'react';
+import { createChart } from 'lightweight-charts';
+
+const ChartComponent = () => {
+  const candlestickChartRef = useRef();
+  const rsiChartRef = useRef();
+  const [crosshairPosition, setCrosshairPosition] = useState(null);
+
+  const getData = async () => {
+    // Your data fetching logic here
+  };
+
+  useEffect(() => {
+    const createSeparateChart = (containerRef, seriesType, seriesOptions, dataMapper) => {
+      const chart = createChart(containerRef.current, {
+        // Chart configuration options
+      });
+
+      const series = chart[seriesType](seriesOptions);
+
+      const fetchAndRenderData = async () => {
+        const data = await getData();
+        const formattedData = data.map(dataMapper);
+        series.setData(formattedData);
+      };
+
+      fetchAndRenderData();
+
+      // Resize observer and other setup...
+
+      return { chart, series };
+    };
+
+    const candlestickChart = createSeparateChart(
+      candlestickChartRef,
+      'addCandlestickSeries',
+      {},
+      d => ({
+        // Candlestick series data mapping
+      })
+    );
+
+    const rsiChart = createSeparateChart(
+      rsiChartRef,
+      'addLineSeries',
+      { color: 'purple', lineWidth: 1 },
+      d => ({
+        // RSI series data mapping
+      })
+    );
+
+    // Crosshair synchronization logic...
+
+    return () => {
+      candlestickChart.chart.remove();
+      rsiChart.chart.remove();
+    };
+  }, []);
+
+  return (
+    <div>
+      <div ref={candlestickChartRef} style={{ width: '100vw', height: '50vh' }} />
+      <div ref={rsiChartRef} style={{ width: '100vw', height: '50vh' }} />
+    </div>
+  );
+};
+
+export default ChartComponent;
