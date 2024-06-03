@@ -25,27 +25,11 @@ const ChartComponent = () => {
     const candlestickChart = createChart(candlestickChartRef.current, {
       width: candlestickChartRef.current.clientWidth,
       height: 300,
-      layout: {
-        backgroundColor: '#ffffff',
-        textColor: '#000000',
-      },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-      },
     });
 
     const rsiChart = createChart(rsiChartRef.current, {
       width: rsiChartRef.current.clientWidth,
       height: 200,
-      layout: {
-        backgroundColor: '#ffffff',
-        textColor: '#000000',
-      },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-      },
     });
 
     const candlestickSeries = candlestickChart.addCandlestickSeries();
@@ -61,8 +45,8 @@ const ChartComponent = () => {
       if (crosshairPosition === null) return;
 
       const price = event.price;
-      const containerHeight = targetChart.container().clientHeight;
-      const chartHeight = targetChart.timeScale().height();
+      const chartHeight = sourceChart.timeScale().height();
+      const containerHeight = sourceChart.height();
       const yCoordinate = (price / chartHeight) * containerHeight;
 
       if (yCoordinate !== null) {
