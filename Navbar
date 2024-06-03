@@ -5,21 +5,23 @@ const ChartComponent = () => {
   const candlestickChartRef = useRef();
   const rsiChartRef = useRef();
 
-  const getCandlestickData = () => {
-    return [
-      { time: '2023-06-01', open: 100, high: 110, low: 90, close: 105 },
-      { time: '2023-06-02', open: 105, high: 115, low: 95, close: 110 },
-      // Add more data points as needed
-    ];
-  };
+  const getCandlestickData = () => [
+    { time: '2023-06-01', open: 100, high: 110, low: 90, close: 105 },
+    { time: '2023-06-02', open: 105, high: 115, low: 95, close: 110 },
+    { time: '2023-06-03', open: 110, high: 120, low: 100, close: 115 },
+    { time: '2023-06-04', open: 115, high: 125, low: 105, close: 120 },
+    { time: '2023-06-05', open: 120, high: 130, low: 110, close: 125 },
+    // Add more data points as needed
+  ];
 
-  const getRSIData = () => {
-    return [
-      { time: '2023-06-01', value: 30 },
-      { time: '2023-06-02', value: 35 },
-      // Add more data points as needed
-    ];
-  };
+  const getRSIData = () => [
+    { time: '2023-06-01', value: 30 },
+    { time: '2023-06-02', value: 35 },
+    { time: '2023-06-03', value: 40 },
+    { time: '2023-06-04', value: 45 },
+    { time: '2023-06-05', value: 50 },
+    // Add more data points as needed
+  ];
 
   useEffect(() => {
     const candlestickChart = createChart(candlestickChartRef.current, {
@@ -54,35 +56,19 @@ const ChartComponent = () => {
     const rsiSeries = rsiChart.addLineSeries({ color: 'purple' });
     rsiSeries.setData(getRSIData());
 
-    // Synchronize crosshair movement
-    const syncCrosshair = (e) => {
-      if (!e || !e.time) return;
-      const crosshairTime = e.time;
-
-      const crosshairCandlestick = {
-        time: crosshairTime,
-        seriesData: [{ series: candlestickSeries }],
-      };
-      const crosshairRSI = {
-        time: crosshairTime,
-        seriesData: [{ series: rsiSeries }],
-      };
-
-      candlestickChart.subscribeCrosshairMove((param) => {
-        if (param.time !== crosshairTime) {
-          rsiChart.moveCrosshair(crosshairRSI);
-        }
-      });
-
-      rsiChart.subscribeCrosshairMove((param) => {
-        if (param.time !== crosshairTime) {
-          candlestickChart.moveCrosshair(crosshairCandlestick);
-        }
-      });
+    const synchronizeCrosshair = (event) => {
+      const crosshairSource = event.seriesData;
+      if (crosshairSource) {
+        const time = event.time;
+        const candlestickChartSource = candlestickChart.timeScale();
+        const rsiChartSource = rsiChart.timeScale();
+        candlestickChartSource.setVisibleRange({ from: time - 10, to: time + 10 });
+        rsiChartSource.setVisibleRange({ from: time - 10, to: time + 10 });
+      }
     };
 
-    candlestickChart.subscribeCrosshairMove(syncCrosshair);
-    rsiChart.subscribeCrosshairMove(syncCrosshair);
+    candlestickChart.subscribeCrosshairMove(synchronizeCrosshair);
+    rsiChart.subscribeCrosshairMove(synchronizeCrosshair);
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
