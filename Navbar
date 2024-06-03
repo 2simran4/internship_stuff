@@ -1,56 +1,141 @@
 import React from 'react';
-import { ChartComponent, SeriesCollectionDirective, SeriesDirective, CandleSeriesDirective, CandleSeries, Category, Tooltip, TechnicalIndicator, RsiIndicator } from '@syncfusion/ej2-react-charts';
+import ReactApexChart from 'react-apexcharts';
 
-class CandlestickWithRSIChart extends React.Component {
-    render() {
-        return (
-            <div>
-                {/* Candlestick Chart */}
-                <ChartComponent id='candlestick-chart' primaryXAxis={{ valueType: 'Category' }} primaryYAxis={{ title: 'Price' }}>
-                    <SeriesCollectionDirective>
-                        <SeriesDirective type='Candle' dataSource={getCandlestickData()} xName='Date' high='High' low='Low' open='Open' close='Close'>
-                        </SeriesDirective>
-                    </SeriesCollectionDirective>
-                </ChartComponent>
+class ChartComponent extends React.Component {
+  constructor(props) {
+    super(props);
 
-                {/* RSI Line Graph */}
-                <ChartComponent id='rsi-chart' primaryXAxis={{ valueType: 'Category' }} primaryYAxis={{ title: 'RSI' }}>
-                    <SeriesCollectionDirective>
-                        <SeriesDirective type='Line' width={2} dataSource={getRSIData()} xName='Date' yName='Close' name='RSI' marker={{ visible: true }}></SeriesDirective>
-                    </SeriesCollectionDirective>
-                    <Tooltip enable={true}></Tooltip>
-                    <TechnicalIndicator>
-                        <RsiIndicator period={14} seriesName='RSI' dataSource={getRSIData()} close='Close'>
-                        </RsiIndicator>
-                    </TechnicalIndicator>
-                </ChartComponent>
-            </div>
-        );
+    this.state = {
+      candlestickSeries: [
+        {
+          name: 'Candlestick',
+          data: this.generateCandlestickData(new Date('11 Feb 2017').getTime(), 20),
+        },
+      ],
+      rsiSeries: [
+        {
+          name: 'RSI',
+          data: this.generateRSIData(new Date('11 Feb 2017').getTime(), 20),
+        },
+      ],
+      candlestickOptions: {
+        chart: {
+          type: 'candlestick',
+          height: 300,
+          id: 'candlestick',
+          group: 'financial',
+          toolbar: {
+            autoSelected: 'zoom',
+          },
+        },
+        xaxis: {
+          type: 'datetime',
+        },
+        yaxis: {
+          title: {
+            text: 'Price',
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
+        tooltip: {
+          shared: true,
+          intersect: false,
+          y: {
+            formatter: function (val) {
+              return val !== null ? val.toFixed(2) : 'N/A';
+            },
+          },
+        },
+        noData: {
+          text: 'Loading...',
+        },
+      },
+      rsiOptions: {
+        chart: {
+          type: 'line',
+          height: 200,
+          id: 'rsi',
+          group: 'financial',
+          toolbar: {
+            autoSelected: 'zoom',
+          },
+        },
+        xaxis: {
+          type: 'datetime',
+        },
+        yaxis: {
+          opposite: true,
+          title: {
+            text: 'RSI',
+          },
+          min: 0,
+          max: 100,
+          tooltip: {
+            enabled: true,
+          },
+        },
+        tooltip: {
+          shared: true,
+          intersect: false,
+          y: {
+            formatter: function (val) {
+              return val !== null ? val.toFixed(2) : 'N/A';
+            },
+          },
+        },
+        noData: {
+          text: 'Loading...',
+        },
+      },
+    };
+  }
+
+  generateCandlestickData(baseval, count) {
+    const series = [];
+    for (let i = 0; i < count; i++) {
+      const open = Math.floor(Math.random() * (100 - 90 + 1)) + 90;
+      const close = Math.floor(Math.random() * (100 - 90 + 1)) + 90;
+      const high = Math.max(open, close) + Math.floor(Math.random() * 10);
+      const low = Math.min(open, close) - Math.floor(Math.random() * 10);
+      series.push({
+        x: new Date(baseval + i * 86400000),
+        y: [open, high, low, close],
+      });
     }
+    return series;
+  }
+
+  generateRSIData(baseval, count) {
+    const series = [];
+    for (let i = 0; i < count; i++) {
+      series.push({
+        x: new Date(baseval + i * 86400000),
+        y: Math.floor(Math.random() * 100),
+      });
+    }
+    return series;
+  }
+
+  render() {
+    return (
+      <div id="chart">
+        <ReactApexChart
+          options={this.state.candlestickOptions}
+          series={this.state.candlestickSeries}
+          type="candlestick"
+          height={300}
+        />
+        <ReactApexChart
+          options={this.state.rsiOptions}
+          series={this.state.rsiSeries}
+          type="line"
+          height={200}
+        />
+      </div>
+    );
+  }
 }
 
-// Dummy static data for candlestick chart
-const getCandlestickData = () => {
-    return [
-        { Date: 'Jan', Open: 100, High: 150, Low: 90, Close: 120 },
-        { Date: 'Feb', Open: 120, High: 180, Low: 110, Close: 140 },
-        { Date: 'Mar', Open: 140, High: 200, Low: 130, Close: 160 },
-        { Date: 'Apr', Open: 160, High: 220, Low: 150, Close: 180 },
-        { Date: 'May', Open: 180, High: 250, Low: 170, Close: 200 },
-        // Add more data points as needed
-    ];
-}
-
-// Dummy static data for RSI line graph
-const getRSIData = () => {
-    return [
-        { Date: 'Jan', Close: 60 },
-        { Date: 'Feb', Close: 70 },
-        { Date: 'Mar', Close: 80 },
-        { Date: 'Apr', Close: 75 },
-        { Date: 'May', Close: 85 },
-        // Add more data points as needed
-    ];
-}
-
-export default CandlestickWithRSIChart;
+export default ChartComponent;
