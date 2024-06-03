@@ -2120,3 +2120,141 @@ const ChartComponent = () => {
 };
 
 export default ChartComponent;
+import React, { useEffect, useRef, useState } from 'react';
+import { createChart } from 'lightweight-charts';
+
+const ChartComponent = () => {
+  const candlestickChartRef = useRef();
+  const rsiChartRef = useRef();
+  const [crosshairPosition, setCrosshairPosition] = useState(null);
+
+  const getData = async () => {
+    return [
+      // Sample data for candlestick and RSI, replace with your actual data fetching logic
+    ];
+  };
+
+  useEffect(() => {
+    const createSeparateChart = (containerRef, seriesType, seriesOptions, dataMapper) => {
+      const chart = createChart(containerRef.current, {
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight,
+        layout: {
+          backgroundColor: '#ffffff',
+          textColor: '#000',
+        },
+        rightPriceScale: {
+          visible: true,
+          borderColor: 'rgba(197, 203, 206, 0.8)',
+        },
+        timeScale: {
+          borderColor: 'rgba(197, 203, 206, 0.8)',
+        },
+        crosshair: {
+          mode: 1, // Normal mode (not magnet)
+        },
+      });
+
+      const series = chart[seriesType](seriesOptions);
+
+      const fetchAndRenderData = async () => {
+        const data = await getData();
+        const formattedData = data.map(dataMapper);
+        series.setData(formattedData);
+      };
+
+      fetchAndRenderData();
+
+      const resizeObserver = new ResizeObserver(entries => {
+        if (entries.length === 0 || entries[0].target !== containerRef.current) {
+          return;
+        }
+        const { width, height } = entries[0].contentRect;
+        chart.resize(width, height);
+      });
+
+      resizeObserver.observe(containerRef.current);
+
+      return { chart, series };
+    };
+
+    const candlestickChart = createSeparateChart(
+      candlestickChartRef,
+      'addCandlestickSeries',
+      {},
+      d => ({
+        time: d.timestamp,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close,
+      })
+    );
+
+    const rsiChart = createSeparateChart(
+      rsiChartRef,
+      'addLineSeries',
+      { color: 'purple', lineWidth: 1 },
+      d => ({
+        time: d.timestamp,
+        value: d.rsi,
+      })
+    );
+
+    const synchronizeCrosshair = (chart1, chart2) => {
+      let crosshairVisible = false;
+
+      chart1.subscribeCrosshairMove(param => {
+        if (!param || !param.time || !param.point) {
+          if (crosshairVisible) {
+            chart2.applyOptions({
+              crosshair: { visible: false },
+            });
+            setCrosshairPosition(null);
+            crosshairVisible = false;
+          }
+          return;
+        }
+        crosshairVisible = true;
+        chart2.applyOptions({
+          crosshair: { visible: true },
+        });
+        setCrosshairPosition(param.point);
+      });
+
+      chart2.subscribeCrosshairMove(param => {
+        if (!param || !param.time || !param.point) {
+          if (crosshairVisible) {
+            chart1.applyOptions({
+              crosshair: { visible: false },
+            });
+            setCrosshairPosition(null);
+            crosshairVisible = false;
+          }
+          return;
+        }
+        crosshairVisible = true;
+        chart1.applyOptions({
+          crosshair: { visible: true },
+        });
+        setCrosshairPosition(param.point);
+      });
+    };
+
+    synchronizeCrosshair(candlestickChart.chart, rsiChart.chart);
+
+    return () => {
+      candlestickChart.chart.remove();
+      rsiChart.chart.remove();
+    };
+  }, []);
+
+  return (
+    <div>
+      <div ref={candlestickChartRef} style={{ width: '100vw', height: '50vh' }} />
+      <div ref={rsiChartRef} style={{ width: '100vw', height: '50vh' }} />
+    </div>
+  );
+};
+
+export default ChartComponent;
