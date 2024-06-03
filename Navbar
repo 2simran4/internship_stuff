@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartComponent, SeriesCollectionDirective, SeriesDirective, CandleSeriesDirective, CandleSeries, Category, Tooltip, TechnicalIndicatorDirective, TechnicalIndicatorsDirective, RsiIndicatorDirective, RsiIndicator } from '@syncfusion/ej2-react-charts';
+import { ChartComponent, SeriesCollectionDirective, SeriesDirective, CandleSeriesDirective, CandleSeries, Category, Tooltip, TechnicalIndicator, RsiIndicator } from '@syncfusion/ej2-react-charts';
 
 class CandlestickWithRSIChart extends React.Component {
     render() {
@@ -15,14 +15,14 @@ class CandlestickWithRSIChart extends React.Component {
 
                 {/* RSI Line Graph */}
                 <ChartComponent id='rsi-chart' primaryXAxis={{ valueType: 'Category' }} primaryYAxis={{ title: 'RSI' }}>
-                    <TechnicalIndicatorsDirective>
-                        <RsiIndicatorDirective period={14} seriesName='RSI' dataSource={getRSIData()} close='Close'>
-                        </RsiIndicatorDirective>
-                    </TechnicalIndicatorsDirective>
                     <SeriesCollectionDirective>
-                        <SeriesDirective type='Line' width={2} xAxisName='Date' yAxisName='RSI' name='RSI' marker={{ visible: true }}></SeriesDirective>
+                        <SeriesDirective type='Line' width={2} dataSource={getRSIData()} xName='Date' yName='Close' name='RSI' marker={{ visible: true }}></SeriesDirective>
                     </SeriesCollectionDirective>
                     <Tooltip enable={true}></Tooltip>
+                    <TechnicalIndicator>
+                        <RsiIndicator period={14} seriesName='RSI' dataSource={getRSIData()} close='Close'>
+                        </RsiIndicator>
+                    </TechnicalIndicator>
                 </ChartComponent>
             </div>
         );
