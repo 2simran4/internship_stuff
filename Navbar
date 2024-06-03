@@ -54,23 +54,21 @@ const ChartComponent = () => {
     const rsiSeries = rsiChart.addLineSeries({ color: 'purple' });
     rsiSeries.setData(rsiData);
 
-    const synchronizeCrosshair = (event, sourceChart, targetChart) => {
-      const crosshair = event ? { time: event.time } : null;
-      targetChart.applyOptions({
-        crosshair: {
-          vertLine: { visible: !!crosshair },
-          horzLine: { visible: !!crosshair },
-        },
-      });
-      targetChart.setCrosshair(crosshair);
+    const synchronizeCrosshair = (event) => {
+      if (!event || !event.time) return;
+
+      const coordinate = candlestickChart.timeScale().timeToCoordinate(event.time);
+      if (coordinate === null) return;
+
+      rsiChart.setCrosshair({ x: coordinate, y: 0 });
     };
 
     candlestickChart.subscribeCrosshairMove((event) => {
-      synchronizeCrosshair(event, candlestickChart, rsiChart);
+      synchronizeCrosshair(event);
     });
 
     rsiChart.subscribeCrosshairMove((event) => {
-      synchronizeCrosshair(event, rsiChart, candlestickChart);
+      synchronizeCrosshair(event);
     });
 
     const resizeObserver = new ResizeObserver((entries) => {
