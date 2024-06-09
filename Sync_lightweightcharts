@@ -1,0 +1,202 @@
+import React, { useEffect, useRef } from 'react';
+import {
+  createChart,
+  CrosshairMode
+} from 'lightweight-charts';
+
+const generateLineData = (minValue, maxValue, maxDailyGainLoss = 1000) => {
+  const res = [];
+  const time = new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0));
+  for (let i = 0; i < 500; ++i) {
+    const previous = res.length > 0 ? res[res.length - 1] : { value: 0 };
+    const newValue = previous.value + ((Math.random() * maxDailyGainLoss * 2) - maxDailyGainLoss);
+
+    res.push({
+      time: time.getTime() / 1000,
+      value: Math.max(minValue, Math.min(maxValue, newValue))
+    });
+
+    time.setUTCDate(time.getUTCDate() + 1);
+  }
+  return res;
+};
+
+const generateHistogramData = (minValue, maxValue) => {
+  const res = [];
+  const time = new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0));
+  for (let i = 0; i < 500; ++i) {
+    res.push({
+      time: time.getTime() / 1000,
+      value: minValue + Math.random() * (maxValue - minValue)
+    });
+    time.setUTCDate(time.getUTCDate() + 1);
+  }
+  return res;
+};
+
+const App = () => {
+  const containerRef1 = useRef(null);
+  const containerRef2 = useRef(null);
+  const containerRef3 = useRef(null);
+  const containerRef4 = useRef(null);
+
+  useEffect(() => {
+    const chart1 = createChart(containerRef1.current, {
+      timeScale: {
+        borderColor: "rgb(225, 226, 227)"
+      },
+      rightPriceScale: {
+        autoScale: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.08,
+        }
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+    });
+
+    const mainSeries1 = chart1.addLineSeries({
+      title: 'primary',
+      priceFormat: {
+        minMove: 1,
+        precision: 0,
+      },
+    });
+    mainSeries1.setData(generateLineData(1000, 300000, 1500));
+
+    const volumeSeries = chart1.addHistogramSeries({
+      secondary: 'volume',
+      priceScaleId: '',
+    });
+    volumeSeries.setData(generateHistogramData(100000, 3000000));
+
+    const chart2 = createChart(containerRef2.current, {
+      timeScale: {
+        borderColor: "rgb(225, 226, 227)"
+      },
+      rightPriceScale: {
+        autoScale: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.08,
+        }
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+    });
+
+    const mainSeries2 = chart2.addLineSeries({
+      title: 'second',
+      priceFormat: {
+        minMove: 1,
+        precision: 0,
+      },
+      color: '#ff0000',
+    });
+    mainSeries2.setData(generateLineData(0, 100, 20));
+
+    const chart3 = createChart(containerRef3.current, {
+      timeScale: {
+        borderColor: "rgb(225, 226, 227)"
+      },
+      rightPriceScale: {
+        autoScale: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.08,
+        }
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+    });
+
+    const mainSeries3 = chart3.addLineSeries({
+      title: 'third',
+      priceFormat: {
+        minMove: 1,
+        precision: 0,
+      },
+      color: '#00ff00',
+    });
+    mainSeries3.setData(generateLineData(0, 100, 20));
+
+    const chart4 = createChart(containerRef4.current, {
+      timeScale: {
+        borderColor: "rgb(225, 226, 227)"
+      },
+      rightPriceScale: {
+        autoScale: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.08,
+        }
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+    });
+
+    const mainSeries4 = chart4.addLineSeries({
+      title: 'fourth',
+      priceFormat: {
+        minMove: 1,
+        precision: 0,
+      },
+      color: '#ea6622',
+    });
+    mainSeries4.setData(generateLineData(0, 100, 20));
+
+    const synchronizeCharts = (targetChart, otherCharts) => {
+      const onVisibleTimeRangeChanged = ({ from, to }) => {
+        otherCharts.forEach(chart => {
+          chart.timeScale().setVisibleRange({ from, to });
+        });
+      };
+
+      const onCrosshairMove = (param) => {
+        otherCharts.forEach(chart => {
+          chart.setCrosshairPosition(param);
+        });
+      };
+
+      targetChart.timeScale().subscribeVisibleTimeRangeChange(onVisibleTimeRangeChanged);
+      targetChart.subscribeCrosshairMove(onCrosshairMove);
+    };
+
+    const charts = [chart1, chart2, chart3, chart4];
+
+    charts.forEach((chart, index, arr) => {
+      const otherCharts = arr.filter((_, i) => i !== index);
+      synchronizeCharts(chart, otherCharts);
+    });
+
+    const handleResize = () => {
+      charts.forEach(chart => {
+        chart.resize(containerRef1.current.clientWidth, containerRef1.current.clientHeight);
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      charts.forEach(chart => chart.remove());
+    };
+  }, []);
+
+  return (
+    <div>
+      <div ref={containerRef1} style={{ width: '100%', height: '150px', marginBottom: '10px' }} />
+      <div ref={containerRef2} style={{ width: '100%', height: '150px', marginBottom: '10px' }} />
+      <div ref={containerRef3} style={{ width: '100%', height: '150px', marginBottom: '10px' }} />
+      <div ref={containerRef4} style={{ width: '100%', height: '150px' }} />
+    </div>
+  );
+};
+
+export default App;
