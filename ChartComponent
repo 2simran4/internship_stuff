@@ -1,130 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import React, { useState } from 'react';
+import styles from './SearchBar.module.css';
 
-const ChartComponent = () => {
-  // Prepare candlestick data
-  const candlestickData = [
-    {
-      x: new Date(1538778600000),
-      y: [6629.81, 6650.5, 6623.04, 6633.33]
-    },
-    {
-      x: new Date(1538780400000),
-      y: [6632.01, 6643.59, 6620, 6630.11]
-    },
-    // ... more candlestick data
-  ];
+const SearchBar = () => {
+  const [inputValue, setInputValue] = useState('');
 
-  // Prepare volume data with corresponding colors
-  const volumeData = candlestickData.map((tick) => {
-    const [open, high, low, close] = tick.y;
-    const color = close > open ? 'green' : 'red';
-    return {
-      x: tick.x,
-      y: Math.floor(Math.random() * 2000),  // Replace with actual volume data
-      fillColor: color
-    };
-  });
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
 
-  const [series, setSeries] = useState([
-    {
-      name: 'Candlestick',
-      type: 'candlestick',
-      data: candlestickData
-    },
-    {
-      name: 'Volume',
-      type: 'bar',
-      data: volumeData
-    }
-  ]);
-
-  const options = {
-    chart: {
-      height: 350,
-      type: 'line',
-      stacked: false
-    },
-    title: {
-      text: 'Candlestick Chart with Volume Histogram',
-      align: 'left'
-    },
-    xaxis: {
-      type: 'datetime'
-    },
-    yaxis: [
-      {
-        seriesName: 'Candlestick',
-        title: {
-          text: 'Price'
-        }
-      },
-      {
-        opposite: true,
-        seriesName: 'Volume',
-        title: {
-          text: 'Volume'
-        }
-      }
-    ],
-    plotOptions: {
-      bar: {
-        colors: {
-          ranges: [
-            {
-              from: -10000,
-              to: 0,
-              color: '#F15B46'
-            },
-            {
-              from: 0,
-              to: 10000,
-              color: '#00A100'
-            }
-          ]
-        }
-      }
-    },
-    tooltip: {
-      shared: true,
-      custom: [
-        function({ seriesIndex, dataPointIndex, w }) {
-          if (seriesIndex === 0) {
-            const o = w.globals.seriesCandleO[seriesIndex][dataPointIndex];
-            const h = w.globals.seriesCandleH[seriesIndex][dataPointIndex];
-            const l = w.globals.seriesCandleL[seriesIndex][dataPointIndex];
-            const c = w.globals.seriesCandleC[seriesIndex][dataPointIndex];
-            return (
-              `<div class="apexcharts-tooltip-candlestick">
-                <div>Open: <span>${o}</span></div>
-                <div>High: <span>${h}</span></div>
-                <div>Low: <span>${l}</span></div>
-                <div>Close: <span>${c}</span></div>
-              </div>`
-            );
-          } else {
-            const volume = w.globals.series[seriesIndex][dataPointIndex];
-            return (
-              `<div class="apexcharts-tooltip-bar">
-                <div>Volume: <span>${volume}</span></div>
-              </div>`
-            );
-          }
-        }
-      ]
-    }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log('Submitted value:', inputValue);
+    // Implement the search logic here
   };
 
   return (
-    <div id="chart">
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="line"
-        height={350}
-      />
+    <div className={styles.searchBarContainer}>
+      <h1 className={styles.title}>TRADE VISION</h1>
+      <p className={styles.subtitle}>Unlock the Power of Precision Trading</p>
+      <form onSubmit={handleSubmit} className={styles.searchForm}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          className={styles.searchInput}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </form>
     </div>
   );
 };
 
-export default ChartComponent;
+export default SearchBar;
+
+
+.searchBarContainer {
+  text-align: center;
+  padding: 20px;
+  background-color: white;
+}
+
+.title {
+  font-size: 24px;
+  color: black;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: grey;
+  margin-bottom: 20px;
+}
+
+.searchForm {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.searchInput {
+  padding: 8px 16px;
+  width: 300px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+.searchButton {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
