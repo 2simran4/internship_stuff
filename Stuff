@@ -1,0 +1,55 @@
+import React from 'react';
+import './PhotoGrid.css';
+
+const photos = [
+  // Add your photo URLs here
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  'https://via.placeholder.com/150',
+  // Add more URLs as needed
+];
+
+function PhotoGrid() {
+  return (
+    <div className="photoGridContainer">
+      {photos.map((photo, index) => (
+        <div key={index} className="photoItem">
+          <img src={photo} alt={`Photo ${index + 1}`} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default PhotoGrid;
+/* PhotoGrid.css */
+
+.photoGridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  max-height: 500px; /* Set the height of the scrollable area */
+  overflow-y: auto; /* Make the grid scrollable */
+  border: 1px solid #ccc; /* Optional: add a border for better visual separation */
+}
+
+.photoItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0; /* Optional: add background color to photo items */
+  border-radius: 4px; /* Optional: add rounded corners to photo items */
+  overflow: hidden; /* Make sure images don't overflow the container */
+}
+
+.photoItem img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
