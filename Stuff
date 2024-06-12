@@ -1,55 +1,62 @@
-import React from 'react';
-import './PhotoGrid.css';
+// src/components/ChartContainer.js
 
-const photos = [
-  // Add your photo URLs here
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  'https://via.placeholder.com/150',
-  // Add more URLs as needed
-];
+import React, { useState, useEffect } from 'react';
+import CandlestickChart from './CandlestickChart';
 
-function PhotoGrid() {
-  return (
-    <div className="photoGridContainer">
-      {photos.map((photo, index) => (
-        <div key={index} className="photoItem">
-          <img src={photo} alt={`Photo ${index + 1}`} />
-        </div>
-      ))}
-    </div>
-  );
-}
+const generateMockData = () => {
+  // Generate mock data for demonstration
+  const data = [];
+  let date = new Date();
+  for (let i = 0; i < 30; i++) {
+    const open = Math.random() * 100;
+    const close = Math.random() * 100;
+    const high = Math.max(open, close) + Math.random() * 10;
+    const low = Math.min(open, close) - Math.random() * 10;
+    data.push({
+      time: date.toISOString().split('T')[0],
+      open: open,
+      high: high,
+      low: low,
+      close: close,
+    });
+    date.setDate(date.getDate() + 1);
+  }
+  return data;
+};
 
-export default PhotoGrid;
-/* PhotoGrid.css */
+const ChartContainer = () => {
+  const [data, setData] = useState([]);
 
-.photoGridContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
-  padding: 10px;
-  max-height: 500px; /* Set the height of the scrollable area */
-  overflow-y: auto; /* Make the grid scrollable */
-  border: 1px solid #ccc; /* Optional: add a border for better visual separation */
-}
+  useEffect(() => {
+    setData(generateMockData());
+  }, []);
 
-.photoItem {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0; /* Optional: add background color to photo items */
-  border-radius: 4px; /* Optional: add rounded corners to photo items */
-  overflow: hidden; /* Make sure images don't overflow the container */
-}
+  return <CandlestickChart data={data} />;
+};
 
-.photoItem img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
+export default ChartContainer;
+
+// src/components/CandlestickChart.js
+
+import React, { useEffect, useRef } from 'react';
+import { createChart } from 'lightweight-charts';
+
+const CandlestickChart = ({ data }) => {
+  const chartContainerRef = useRef();
+
+  useEffect(() => {
+    const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height: 400,
+    });
+    const candlestickSeries = chart.addCandlestickSeries();
+
+    candlestickSeries.setData(data);
+
+    return () => chart.remove();
+  }, [data]);
+
+  return <div ref={chartContainerRef} style={{ position: 'relative' }} />;
+};
+
+export default CandlestickChart;
