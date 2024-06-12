@@ -60,3 +60,45 @@ const CandlestickChart = ({ data }) => {
 };
 
 export default CandlestickChart;
+
+// src/components/ChartContainer.js
+
+import React, { useState, useEffect } from 'react';
+import CandlestickChart from './CandlestickChart';
+
+const generateMockData = () => {
+  // Generate mock data for demonstration
+  const data = [];
+  let date = new Date();
+  for (let i = 0; i < 30; i++) {
+    const open = Math.random() * 100;
+    const close = Math.random() * 100;
+    const high = Math.max(open, close) + Math.random() * 10;
+    const low = Math.min(open, close) - Math.random() * 10;
+    data.push({
+      time: date.toISOString().split('T')[0],
+      open: open,
+      high: high,
+      low: low,
+      close: close,
+    });
+    date.setDate(date.getDate() + 1);
+  }
+  return data;
+};
+
+const ChartContainer = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData(generateMockData());
+    }, 2000); // Update data every 2 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <CandlestickChart data={data} />;
+};
+
+export default ChartContainer;
