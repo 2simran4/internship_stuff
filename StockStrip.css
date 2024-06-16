@@ -1,0 +1,39 @@
+.stock-strip-container {
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: #000;
+    color: #fff;
+    padding: 10px 0;
+  }
+  
+  .stock-strip {
+    display: inline-block;
+    animation: scroll-left 15s linear infinite;
+  }
+  
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .stock-strip__item {
+    display: inline-block;
+    padding: 0 20px;
+  }
+  
+  .stock-strip__item span {
+    margin-left: 5px;
+  }
+  
+  .positive {
+    color: #0f0;
+  }
+  
+  .negative {
+    color: #f00;
+  }
+  

@@ -1,0 +1,55 @@
+/* BoxGrid.css */
+
+.box-grid-container {
+    margin: 0 100px;
+    margin-top: 100px;
+  }
+  
+  .box-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  .box {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .box__section {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .box__section--top {
+    background-color: #ddd;
+    border-right: 1px solid #ccc; /* Add border to separate the sections */
+  }
+  
+  .box__section--bottom {
+    background-color: #fff;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .box-grid-container {
+      margin: 0 50px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .box-grid-container {
+      margin: 0 20px;
+    }
+  
+    .box-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+
