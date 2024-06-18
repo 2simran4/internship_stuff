@@ -32,3 +32,18 @@ const StockStrip = () => {
 };
 
 export default StockStrip;
+import React from 'react';
+
+function App() {
+  const openPopup = () => {
+    window.open("", "popup", "width=700,height=7000");
+  };
+
+  return (
+    <div>
+      <button onClick={openPopup}>Open Popup</button>
+    </div>
+  );
+}
+
+export default App;
