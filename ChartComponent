@@ -1,76 +1,47 @@
 import React, { useState } from 'react';
-import styles from './SearchBar.module.css';
+import Select from 'react-select';
 
-const SearchBar = () => {
-  const [inputValue, setInputValue] = useState('');
+const Indicators = () => {
+  const [selectedIndicators, setSelectedIndicators] = useState([]);
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
+  const options = [
+    { value: 'rsi', label: 'RSI' },
+    { value: 'sma', label: 'SMA' },
+    { value: 'ema_13', label: 'EMA 13' },
+    { value: 'ema_20', label: 'EMA 20' },
+    { value: 'vwap', label: 'VWAP' },
+    { value: 'bb', label: 'Bollinger Bands' }
+  ];
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log('Submitted value:', inputValue);
-    // Implement the search logic here
+  const handleChange = (selectedOptions) => {
+    setSelectedIndicators(selectedOptions);
   };
 
   return (
-    <div className={styles.searchBarContainer}>
-      <h1 className={styles.title}>TRADE VISION</h1>
-      <p className={styles.subtitle}>Unlock the Power of Precision Trading</p>
-      <form onSubmit={handleSubmit} className={styles.searchForm}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          className={styles.searchInput}
-          placeholder="Search"
-          aria-label="Search"
-        />
-      </form>
+    <div style={{ width: '450px', padding: '15px', border: '1px solid #d9d9d9' }}>
+      <span style={{ fontSize: '18px', marginBottom: '10px', display: 'inline-block' }}>
+        Choose Indicators
+      </span>
+      <Select
+        isMulti
+        options={options}
+        value={selectedIndicators}
+        onChange={handleChange}
+        styles={{
+          control: (base) => ({
+            ...base,
+            borderColor: '#d9d9d9',
+            '&:hover': { borderColor: '#b3b3b3' },
+            boxShadow: 'none',
+          }),
+          menu: (base) => ({
+            ...base,
+            zIndex: 100,
+          }),
+        }}
+      />
     </div>
   );
 };
 
-export default SearchBar;
-
-
-.searchBarContainer {
-  text-align: center;
-  padding: 20px;
-  background-color: white;
-}
-
-.title {
-  font-size: 24px;
-  color: black;
-}
-
-.subtitle {
-  font-size: 16px;
-  color: grey;
-  margin-bottom: 20px;
-}
-
-.searchForm {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.searchInput {
-  padding: 8px 16px;
-  width: 300px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-}
-
-.searchButton {
-  background-color: red;
-  color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-}
+export default Indicators;
