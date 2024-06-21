@@ -4,18 +4,17 @@ import { createChart, LineStyle } from 'lightweight-charts';
 const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13, ema26, markers, stockname }) => {
   const chartContainerRef = useRef();
   const tooltipRef = useRef();
-  const chartRef = useRef();
+  const chartRef = useRef(null);
 
-  const candleStickSeriesRef = useRef();
-  const vwapLineRef = useRef();
-  const ema5LineRef = useRef();
-  const ema13LineRef = useRef();
-  const ema26LineRef = useRef();
-  const histogramSeriesRef = useRef();
+  const candleStickSeriesRef = useRef(null);
+  const vwapLineRef = useRef(null);
+  const ema5LineRef = useRef(null);
+  const ema13LineRef = useRef(null);
+  const ema26LineRef = useRef(null);
+  const histogramSeriesRef = useRef(null);
 
   const [candlePrice, setCandlePrice] = useState(null);
   const [volume, setVolume] = useState(null);
-  const [currentTime, setCurrentTime] = useState(null);
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
 
@@ -45,6 +44,8 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
   useEffect(() => {
     if (!chartRef.current) {
       chartRef.current = createChart(chartContainerRef.current, {
+        width: chartWidth * 0.98,
+        height: chartHeight,
         layout: {
           backgroundColor: '#ffffff',
           textColor: '#000',
@@ -128,17 +129,10 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
 
       chartRef.current.subscribeCrosshairMove((param) => {
         if (param.time) {
-          const data = param.seriesData.get(candleStickSeriesRef.current);
+          const candleData = param.seriesData.get(candleStickSeriesRef.current);
           const volumeData = param.seriesData.get(histogramSeriesRef.current);
           setVolume(volumeData);
-          setCandlePrice(data);
-          setCurrentTime(param.time);
-
-          const coordinate = histogramSeriesRef.current.priceToCoordinate(histogramSeriesRef.current.value);
-          const shiftedCoordinate = param.point.x;
-
-          tooltipRef.current.style.left = `${shiftedCoordinate}px`;
-          tooltipRef.current.style.top = `${coordinate}px`;
+          setCandlePrice(candleData);
         }
       });
 
@@ -170,34 +164,28 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
   }, [chartWidth, chartHeight]);
 
   useEffect(() => {
-    const updateSeriesData = (seriesRef, newData) => {
-      const lastDataPoint = seriesRef.current.dataByIndex(seriesRef.current.dataByIndex.length - 1);
-      const newDataPoint = newData[newData.length - 1];
-
-      if (lastDataPoint.time === newDataPoint.time) {
-        seriesRef.current.update(newDataPoint);
-      } else {
-        newData.forEach(dataPoint => seriesRef.current.update(dataPoint));
-      }
-    };
-
     if (candleStickSeriesRef.current) {
-      updateSeriesData(candleStickSeriesRef.current, data1);
+      candleStickSeriesRef.current.setData(data1);
     }
+
     if (histogramSeriesRef.current) {
-      updateSeriesData(histogramSeriesRef.current, data);
+      histogramSeriesRef.current.setData(data);
     }
+
     if (vwapLineRef.current && selectedIndicators.includes('vwap')) {
-      updateSeriesData(vwapLineRef.current, vwapdata);
+      vwapLineRef.current.setData(vwapdata);
     }
+
     if (ema5LineRef.current && selectedIndicators.includes('ema_5')) {
-      updateSeriesData(ema5LineRef.current, ema5);
+      ema5LineRef.current.setData(ema5);
     }
+
     if (ema13LineRef.current && selectedIndicators.includes('ema_13')) {
-      updateSeriesData(ema13LineRef.current, ema13);
+      ema13LineRef.current.setData(ema13);
     }
+
     if (ema26LineRef.current && selectedIndicators.includes('ema_26')) {
-      updateSeriesData(ema26LineRef.current, ema26);
+      ema26LineRef.current.setData(ema26);
     }
   }, [data, data1, vwapdata, ema5, ema13, ema26, selectedIndicators]);
 
