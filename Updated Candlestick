@@ -44,7 +44,7 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
   useEffect(() => {
     if (!chartRef.current) {
       chartRef.current = createChart(chartContainerRef.current, {
-        width: chartWidth * 0.98,
+        width: chartWidth,
         height: chartHeight,
         layout: {
           backgroundColor: '#ffffff',
@@ -157,7 +157,7 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
       }
     } else {
       chartRef.current.applyOptions({
-        width: chartWidth * 0.98,
+        width: chartWidth,
         height: chartHeight,
       });
     }
