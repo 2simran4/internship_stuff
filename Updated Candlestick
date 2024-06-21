@@ -37,46 +37,140 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, emas, ema13
         if (!chartContainerRef.current) return;
 
         const chart = createChart(chartContainerRef.current, {
-            /* chart options */
+            layout: {
+                backgroundColor: '#ffffff',
+                textColor: '#000',
+            },
+            grid: {
+                vertLines: {
+                    color: '#eee',
+                },
+                horzLines: {
+                    color: '#eee',
+                },
+            },
+            leftPriceScale: {
+                scaleMargins: {
+                    top: 0.9,
+                    bottom: 0,
+                },
+            },
+            width: chartWidth * 0.98,
+            height: chartHeight,
+            crosshair: {
+                vertLine: {
+                    width: 5,
+                    style: LineStyle.Solid,
+                    color: "#C3BCDB44",
+                    labelBackgroundColor: '#987DFF',
+                },
+            },
+            timeScale: {
+                borderColor: '#716490',
+                rightOffset: 5,
+                barSpacing: 10,
+                fixLeftEdge: true,
+                timeVisible: true,
+            },
         });
 
-        /* Apply chart configurations here */
-
         const candleStickSeries = chart.addCandlestickSeries({
-            /* candlestick series options */
+            wickUpColor: 'green',
+            upColor: 'green',
+            wickDownColor: 'red',
+            downColor: 'red',
         });
 
         const vwap_line = chart.addLineSeries({
-            /* vwap series options */
+            color: 'rgba(0,0,200,1)',
+            lineWidth: 0.9,
         });
 
-        /* Add other series */
+        const ema5_line = chart.addLineSeries({
+            color: 'rgba(100, 100, 200,1)',
+            lineWidth: 0.6,
+        });
+
+        const ema13_line = chart.addLineSeries({
+            color: 'rgba(100, 100, 200,1)',
+            lineWidth: 0.6,
+        });
+
+        const ema26_line = chart.addLineSeries({
+            color: 'rgba(100, 100, 200,1)',
+            lineWidth: 0.6,
+        });
+
+        const histogramSeries = chart.addHistogramSeries({
+            color: 'blue',
+            priceFormat: {
+                type: 'volume',
+            },
+            priceScaleId: 'left',
+            scaleMargins: {
+                top: 0.2,
+                bottom: 0,
+            },
+        });
 
         chart.subscribeCrosshairMove((param) => {
-            /* Crosshair move logic */
+            if (param.time) {
+                const data = param.seriesData.get(candleStickSeries);
+                const volumeData = param.seriesData.get(histogramSeries);
+                setVolume(volumeData);
+                setCandlePrice(data);
+                setCurrentTime(param.time);
+
+                const coordinate = histogramSeries.priceToCoordinate(volumeData.value);
+                const shiftedCoordinate = param.point.x;
+
+                tooltipRef.current.style.left = shiftedCoordinate + "px";
+                tooltipRef.current.style.top = coordinate + "px";
+            }
         });
 
-        /* Set initial data */
+        // Set initial data
         candleStickSeries.setData(data1);
         histogramSeries.setData(data);
 
+        if (selectedIndicators.indexOf('vwap') !== -1) {
+            vwap_line.setData(vwapdata);
+        }
+        if (selectedIndicators.indexOf('ema_5') !== -1) {
+            ema5_line.setData(emas);
+        }
+        if (selectedIndicators.indexOf('ema_13') !== -1) {
+            ema13_line.setData(ema13);
+        }
+        if (selectedIndicators.indexOf('ema_26') !== -1) {
+            ema26_line.setData(ema26);
+        }
+
         return () => chart.remove();
-    }, [data, data1]); // Dependencies might need adjustments based on your data sources
+    }, [data, data1, ema13, ema26, emas, markers, selectedIndicators, stockname, vwapdata, chartWidth, chartHeight]);
 
     return (
-        <div className="chart-container" ref={chartContainerRef}>
-            {/* Chart container */}
-            <div className="tooltip" ref={tooltipRef}>
-                {/* Tooltip */}
-            </div>
-            <div className="info-box">
-                {/* Information display */}
-                <div>{stockname}</div>
-                <div>Open: {candlePrice?.open}</div>
-                <div>High: {candlePrice?.high}</div>
-                <div>Low: {candlePrice?.low}</div>
-                <div>Close: {candlePrice?.close}</div>
-                <div>Volume: {volume?.value}</div>
+        <div className='chart-container' style={{ position: "relative" }} ref={chartContainerRef}>
+            <div ref={tooltipRef} style={{
+                fontFamily: "Times New Roman",
+                paddingLeft: 10,
+                paddingRight: 10,
+                position: "absolute",
+                top: 5,
+                left: 80,
+                zIndex: 100,
+                color: "black",
+                border: "1.5px solid",
+                borderColor: "black",
+            }}>
+                <div style={{ display: "flex" }}>
+                    <div style={{ marginRight: 15 }}>{stockname}</div>
+                    <div style={{ marginRight: 10 }}>O: {candlePrice?.open}</div>
+                    <div style={{ marginRight: 10 }}>H: {candlePrice?.high}</div>
+                    <div style={{ marginRight: 10 }}>L: {candlePrice?.low}</div>
+                    <div style={{ marginRight: 10 }}>C: {candlePrice?.close}</div>
+                    <div style={{ marginRight: 10 }}>Vol: {volume?.value}</div>
+                </div>
             </div>
         </div>
     );
