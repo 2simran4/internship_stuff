@@ -1,10 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, LineStyle } from 'lightweight-charts';
 
-const HistogramChart = ({ selectedIndicators, candlestickData, histogramData }) => {
+const HistogramChart = ({ selectedIndicators, candlestickData, histogramData, vwapData, ema5Data, ema13Data, ema26Data, markers, stockname }) => {
   const chartContainerRef = useRef();
-  const candleStickSeriesRef = useRef();
+  const candlestickSeriesRef = useRef();
   const histogramSeriesRef = useRef();
+  const vwapSeriesRef = useRef();
+  const ema5SeriesRef = useRef();
+  const ema13SeriesRef = useRef();
+  const ema26SeriesRef = useRef();
 
   useEffect(() => {
     const chart = createChart(chartContainerRef.current, {
@@ -39,7 +43,7 @@ const HistogramChart = ({ selectedIndicators, candlestickData, histogramData }) 
       }
     });
 
-    candleStickSeriesRef.current = chart.addCandlestickSeries({
+    candlestickSeriesRef.current = chart.addCandlestickSeries({
       wickUpColor: 'green',
       upColor: 'green',
       wickDownColor: 'red',
@@ -58,14 +62,34 @@ const HistogramChart = ({ selectedIndicators, candlestickData, histogramData }) 
       }
     });
 
+    vwapSeriesRef.current = chart.addLineSeries({
+      color: 'rgba(0, 0, 200, 1)',
+      lineWidth: 0.9,
+    });
+
+    ema5SeriesRef.current = chart.addLineSeries({
+      color: 'rgba(100, 100, 200, 1)',
+      lineWidth: 0.6,
+    });
+
+    ema13SeriesRef.current = chart.addLineSeries({
+      color: 'rgba(100, 100, 200, 1)',
+      lineWidth: 0.6,
+    });
+
+    ema26SeriesRef.current = chart.addLineSeries({
+      color: 'rgba(100, 100, 200, 1)',
+      lineWidth: 0.6,
+    });
+
     return () => {
       chart.remove();
     };
   }, []);
 
   useEffect(() => {
-    if (candleStickSeriesRef.current && candlestickData) {
-      candleStickSeriesRef.current.update({
+    if (candlestickSeriesRef.current && candlestickData) {
+      candlestickSeriesRef.current.update({
         time: candlestickData.time,
         open: candlestickData.open,
         high: candlestickData.high,
@@ -81,9 +105,53 @@ const HistogramChart = ({ selectedIndicators, candlestickData, histogramData }) 
     }
   }, [histogramData]);
 
+  useEffect(() => {
+    if (vwapSeriesRef.current && vwapData) {
+      vwapSeriesRef.current.setData(vwapData);
+    }
+  }, [vwapData]);
+
+  useEffect(() => {
+    if (ema5SeriesRef.current && ema5Data) {
+      ema5SeriesRef.current.setData(ema5Data);
+    }
+  }, [ema5Data]);
+
+  useEffect(() => {
+    if (ema13SeriesRef.current && ema13Data) {
+      ema13SeriesRef.current.setData(ema13Data);
+    }
+  }, [ema13Data]);
+
+  useEffect(() => {
+    if (ema26SeriesRef.current && ema26Data) {
+      ema26SeriesRef.current.setData(ema26Data);
+    }
+  }, [ema26Data]);
+
   return (
     <div className='w-full h-full' ref={chartContainerRef} style={{ position: "relative" }}>
       {/* Additional JSX for tooltip or other UI elements */}
+      <div style={{
+        fontFamily: "Times New Roman",
+        paddingLeft: 10,
+        paddingRight: 10,
+        position: "absolute",
+        top: 5,
+        left: 80,
+        zIndex: 100,
+        color: "black",
+        border: "1.5px solid",
+        borderBlockColor: "black",
+      }}>
+        <div style={{ display: "flex" }}>
+          <div style={{ marginRight: 15 }}>{stockname}</div>
+          <div style={{ marginRight: 10 }}>O: {candlestickData?.open}</div>
+          <div style={{ marginRight: 10 }}>H: {candlestickData?.high}</div>
+          <div style={{ marginRight: 10 }}>L: {candlestickData?.low}</div>
+          <div style={{ marginRight: 10 }}>C: {candlestickData?.close}</div>
+        </div>
+      </div>
     </div>
   );
 };
