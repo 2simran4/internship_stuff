@@ -7,10 +7,6 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
   const chartRef = useRef(null);
 
   const candleStickSeriesRef = useRef(null);
-  const vwapLineRef = useRef(null);
-  const ema5LineRef = useRef(null);
-  const ema13LineRef = useRef(null);
-  const ema26LineRef = useRef(null);
   const histogramSeriesRef = useRef(null);
 
   const [candlePrice, setCandlePrice] = useState(null);
@@ -95,26 +91,6 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
         downColor: 'red',
       });
 
-      vwapLineRef.current = chartRef.current.addLineSeries({
-        color: 'rgba(0,0,200,1)',
-        lineWidth: 0.9,
-      });
-
-      ema5LineRef.current = chartRef.current.addLineSeries({
-        color: 'rgba(100, 100, 200,1)',
-        lineWidth: 0.6,
-      });
-
-      ema13LineRef.current = chartRef.current.addLineSeries({
-        color: 'rgba(100, 100, 200,1)',
-        lineWidth: 0.6,
-      });
-
-      ema26LineRef.current = chartRef.current.addLineSeries({
-        color: 'rgba(100, 100, 200,1)',
-        lineWidth: 0.6,
-      });
-
       histogramSeriesRef.current = chartRef.current.addHistogramSeries({
         color: 'blue',
         priceFormat: {
@@ -126,35 +102,6 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
           bottom: 0,
         }
       });
-
-      chartRef.current.subscribeCrosshairMove((param) => {
-        if (param.time) {
-          const candleData = param.seriesData.get(candleStickSeriesRef.current);
-          const volumeData = param.seriesData.get(histogramSeriesRef.current);
-          setVolume(volumeData);
-          setCandlePrice(candleData);
-        }
-      });
-
-      candleStickSeriesRef.current.setData(data1);
-      histogramSeriesRef.current.setData(data);
-      candleStickSeriesRef.current.setMarkers(markers);
-
-      if (selectedIndicators.includes('vwap')) {
-        vwapLineRef.current.setData(vwapdata);
-      }
-
-      if (selectedIndicators.includes('ema_5')) {
-        ema5LineRef.current.setData(ema5);
-      }
-
-      if (selectedIndicators.includes('ema_13')) {
-        ema13LineRef.current.setData(ema13);
-      }
-
-      if (selectedIndicators.includes('ema_26')) {
-        ema26LineRef.current.setData(ema26);
-      }
     } else {
       chartRef.current.applyOptions({
         width: chartWidth,
@@ -171,23 +118,25 @@ const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, ema5, ema13
     if (histogramSeriesRef.current) {
       histogramSeriesRef.current.setData(data);
     }
+  }, [data, data1]);
 
-    if (vwapLineRef.current && selectedIndicators.includes('vwap')) {
-      vwapLineRef.current.setData(vwapdata);
+  useEffect(() => {
+    if (selectedIndicators.includes('vwap')) {
+      candleStickSeriesRef.current.update({ time: vwapdata.time, open: vwapdata.open, high: vwapdata.high, low: vwapdata.low, close: vwapdata.close });
     }
 
-    if (ema5LineRef.current && selectedIndicators.includes('ema_5')) {
-      ema5LineRef.current.setData(ema5);
+    if (selectedIndicators.includes('ema_5')) {
+      candleStickSeriesRef.current.update({ time: ema5.time, open: ema5.open, high: ema5.high, low: ema5.low, close: ema5.close });
     }
 
-    if (ema13LineRef.current && selectedIndicators.includes('ema_13')) {
-      ema13LineRef.current.setData(ema13);
+    if (selectedIndicators.includes('ema_13')) {
+      candleStickSeriesRef.current.update({ time: ema13.time, open: ema13.open, high: ema13.high, low: ema13.low, close: ema13.close });
     }
 
-    if (ema26LineRef.current && selectedIndicators.includes('ema_26')) {
-      ema26LineRef.current.setData(ema26);
+    if (selectedIndicators.includes('ema_26')) {
+      candleStickSeriesRef.current.update({ time: ema26.time, open: ema26.open, high: ema26.high, low: ema26.low, close: ema26.close });
     }
-  }, [data, data1, vwapdata, ema5, ema13, ema26, selectedIndicators]);
+  }, [selectedIndicators, vwapdata, ema5, ema13, ema26]);
 
   return (
     <div className='w-full h-full' ref={chartContainerRef} style={{ position: "relative" }}>
