@@ -7,9 +7,21 @@ const Indicators = ({ selectedIndicators, setSelectedIndicators }) => {
     setIsOpen(!isOpen); // Toggle dropdown visibility
   };
 
-  const handleSelectedItemChange = (e) => {
-    const selectedItems = Array.from(e.target.selectedOptions, (option) => option.value);
-    setSelectedIndicators(selectedItems); // Update selected indicators
+  const toggleIndicator = (indicator) => {
+    const isSelected = selectedIndicators.includes(indicator);
+    if (isSelected) {
+      setSelectedIndicators(selectedIndicators.filter(item => item !== indicator));
+    } else {
+      setSelectedIndicators([...selectedIndicators, indicator]);
+    }
+  };
+
+  const selectAll = () => {
+    setSelectedIndicators(["rsi", "macd", "obv", "ena_5", "ema_13", "ena_26", "wap", "bb"]);
+  };
+
+  const clearSelection = () => {
+    setSelectedIndicators([]);
   };
 
   return (
@@ -19,26 +31,43 @@ const Indicators = ({ selectedIndicators, setSelectedIndicators }) => {
         className="block text-sm font-medium text-gray-700 cursor-pointer"
         onClick={toggleDropdown}
       >
-        Choose Indicator
+        Choose Indicators
       </label>
       {isOpen && (
-        <select
-          id="indicators"
-          name="indicators"
-          multiple
-          value={selectedIndicators}
-          onChange={handleSelectedItemChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-        >
-          <option value="rsi">RSI</option>
-          <option value="macd">MACD</option>
-          <option value="obv">OBV</option>
-          <option value="ena_5">EMA_5</option>
-          <option value="ema_13">EMA_13</option>
-          <option value="ena_26">EMA_26</option>
-          <option value="wap">WAP</option>
-          <option value="bb">BB</option>
-        </select>
+        <div className="mt-2">
+          <div className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              id="select-all"
+              className="mr-2"
+              checked={selectedIndicators.length === 8}
+              onChange={selectAll}
+            />
+            <label htmlFor="select-all" className="text-sm font-medium text-gray-700 cursor-pointer">
+              Select All
+            </label>
+          </div>
+          {["rsi", "macd", "obv", "ena_5", "ema_13", "ena_26", "wap", "bb"].map((indicator) => (
+            <div key={indicator} className="flex items-center mb-1">
+              <input
+                type="checkbox"
+                id={indicator}
+                className="mr-2"
+                checked={selectedIndicators.includes(indicator)}
+                onChange={() => toggleIndicator(indicator)}
+              />
+              <label htmlFor={indicator} className="text-sm font-medium text-gray-700 cursor-pointer">
+                {indicator.toUpperCase()}
+              </label>
+            </div>
+          ))}
+          <button
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
+            onClick={clearSelection}
+          >
+            Clear Selection
+          </button>
+        </div>
       )}
     </div>
   );
