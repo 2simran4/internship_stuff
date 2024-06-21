@@ -1,159 +1,85 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createChart, LineStyle } from 'lightweight-charts';
 
-const HistogramChart = ({ selectedIndicators, candlestickData, histogramData, vwapData, ema5Data, ema13Data, ema26Data, markers, stockname }) => {
-  const chartContainerRef = useRef();
-  const candlestickSeriesRef = useRef();
-  const histogramSeriesRef = useRef();
-  const vwapSeriesRef = useRef();
-  const ema5SeriesRef = useRef();
-  const ema13SeriesRef = useRef();
-  const ema26SeriesRef = useRef();
+const HistogramChart = ({ selectedIndicators, data, data1, vwapdata, emas, ema13, ema26, markers, stockname }) => {
+    const chartContainerRef = useRef();
+    const tooltipRef = useRef();
+    const [candlePrice, setCandlePrice] = useState(null);
+    const [volume, setVolume] = useState(null);
+    const [currentTime, setCurrentTime] = useState(null);
+    const [chartWidth, setChartWidth] = useState(0);
+    const [chartHeight, setChartHeight] = useState(0);
 
-  useEffect(() => {
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight,
-      layout: {
-        backgroundColor: '#ffffff',
-        textColor: '#000',
-      },
-      grid: {
-        vertLines: {
-          color: '#eee',
-        },
-        horzLines: {
-          color: '#eee',
-        },
-      },
-      crosshair: {
-        vertLine: {
-          width: 5,
-          style: LineStyle.Solid,
-          color: "#C3BCDB44",
-          labelBackgroundColor: '#987DFF',
+    const updateChartSize = () => {
+        if (chartContainerRef.current) {
+            setChartWidth(chartContainerRef.current.clientWidth);
+            setChartHeight(chartContainerRef.current.clientHeight);
         }
-      },
-      timeScale: {
-        borderColor: '#716490',
-        rightOffset: 5,
-        barSpacing: 10,
-        fixLeftEdge: true,
-        timeVisible: true,
-      }
-    });
-
-    candlestickSeriesRef.current = chart.addCandlestickSeries({
-      wickUpColor: 'green',
-      upColor: 'green',
-      wickDownColor: 'red',
-      downColor: 'red',
-    });
-
-    histogramSeriesRef.current = chart.addHistogramSeries({
-      color: 'blue',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: 'left',
-      scaleMargins: {
-        top: 0.2,
-        bottom: 0,
-      }
-    });
-
-    vwapSeriesRef.current = chart.addLineSeries({
-      color: 'rgba(0, 0, 200, 1)',
-      lineWidth: 0.9,
-    });
-
-    ema5SeriesRef.current = chart.addLineSeries({
-      color: 'rgba(100, 100, 200, 1)',
-      lineWidth: 0.6,
-    });
-
-    ema13SeriesRef.current = chart.addLineSeries({
-      color: 'rgba(100, 100, 200, 1)',
-      lineWidth: 0.6,
-    });
-
-    ema26SeriesRef.current = chart.addLineSeries({
-      color: 'rgba(100, 100, 200, 1)',
-      lineWidth: 0.6,
-    });
-
-    return () => {
-      chart.remove();
     };
-  }, []);
 
-  useEffect(() => {
-    if (candlestickSeriesRef.current && candlestickData) {
-      candlestickSeriesRef.current.update({
-        time: candlestickData.time,
-        open: candlestickData.open,
-        high: candlestickData.high,
-        low: candlestickData.low,
-        close: candlestickData.close,
-      });
-    }
-  }, [candlestickData]);
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(() => {
+            updateChartSize();
+        });
 
-  useEffect(() => {
-    if (histogramSeriesRef.current && histogramData) {
-      histogramSeriesRef.current.setData(histogramData);
-    }
-  }, [histogramData]);
+        if (chartContainerRef.current) {
+            resizeObserver.observe(chartContainerRef.current);
+        }
 
-  useEffect(() => {
-    if (vwapSeriesRef.current && vwapData) {
-      vwapSeriesRef.current.setData(vwapData);
-    }
-  }, [vwapData]);
+        return () => {
+            if (chartContainerRef.current) {
+                resizeObserver.unobserve(chartContainerRef.current);
+            }
+        };
+    }, []);
 
-  useEffect(() => {
-    if (ema5SeriesRef.current && ema5Data) {
-      ema5SeriesRef.current.setData(ema5Data);
-    }
-  }, [ema5Data]);
+    useEffect(() => {
+        if (!chartContainerRef.current) return;
 
-  useEffect(() => {
-    if (ema13SeriesRef.current && ema13Data) {
-      ema13SeriesRef.current.setData(ema13Data);
-    }
-  }, [ema13Data]);
+        const chart = createChart(chartContainerRef.current, {
+            /* chart options */
+        });
 
-  useEffect(() => {
-    if (ema26SeriesRef.current && ema26Data) {
-      ema26SeriesRef.current.setData(ema26Data);
-    }
-  }, [ema26Data]);
+        /* Apply chart configurations here */
 
-  return (
-    <div className='w-full h-full' ref={chartContainerRef} style={{ position: "relative" }}>
-      {/* Additional JSX for tooltip or other UI elements */}
-      <div style={{
-        fontFamily: "Times New Roman",
-        paddingLeft: 10,
-        paddingRight: 10,
-        position: "absolute",
-        top: 5,
-        left: 80,
-        zIndex: 100,
-        color: "black",
-        border: "1.5px solid",
-        borderBlockColor: "black",
-      }}>
-        <div style={{ display: "flex" }}>
-          <div style={{ marginRight: 15 }}>{stockname}</div>
-          <div style={{ marginRight: 10 }}>O: {candlestickData?.open}</div>
-          <div style={{ marginRight: 10 }}>H: {candlestickData?.high}</div>
-          <div style={{ marginRight: 10 }}>L: {candlestickData?.low}</div>
-          <div style={{ marginRight: 10 }}>C: {candlestickData?.close}</div>
+        const candleStickSeries = chart.addCandlestickSeries({
+            /* candlestick series options */
+        });
+
+        const vwap_line = chart.addLineSeries({
+            /* vwap series options */
+        });
+
+        /* Add other series */
+
+        chart.subscribeCrosshairMove((param) => {
+            /* Crosshair move logic */
+        });
+
+        /* Set initial data */
+        candleStickSeries.setData(data1);
+        histogramSeries.setData(data);
+
+        return () => chart.remove();
+    }, [data, data1]); // Dependencies might need adjustments based on your data sources
+
+    return (
+        <div className="chart-container" ref={chartContainerRef}>
+            {/* Chart container */}
+            <div className="tooltip" ref={tooltipRef}>
+                {/* Tooltip */}
+            </div>
+            <div className="info-box">
+                {/* Information display */}
+                <div>{stockname}</div>
+                <div>Open: {candlePrice?.open}</div>
+                <div>High: {candlePrice?.high}</div>
+                <div>Low: {candlePrice?.low}</div>
+                <div>Close: {candlePrice?.close}</div>
+                <div>Volume: {volume?.value}</div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default HistogramChart;
