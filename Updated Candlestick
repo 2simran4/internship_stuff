@@ -14,6 +14,13 @@ const HistogramChart = ({
 }) => {
   const chartContainerRef = useRef(null);
   const tooltipRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const candleStickSeriesRef = useRef(null);
+  const vwapLineRef = useRef(null);
+  const ema5LineRef = useRef(null);
+  const ema13LineRef = useRef(null);
+  const ema26LineRef = useRef(null);
+  const histogramSeriesRef = useRef(null);
 
   const [candlePrice, setCandlePrice] = useState(null);
   const [volume, setVolume] = useState(null);
@@ -21,30 +28,8 @@ const HistogramChart = ({
   const [chartWidth, setChartWidth] = useState(0);
   const [chartHeight, setChartHeight] = useState(0);
 
-  const updateChartSize = () => {
-    if (chartContainerRef.current) {
-      setChartWidth(chartContainerRef.current.clientWidth);
-      setChartHeight(chartContainerRef.current.clientHeight);
-    }
-  };
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver(() => {
-      updateChartSize();
-    });
-
-    if (chartContainerRef.current) {
-      resizeObserver.observe(chartContainerRef.current);
-    }
-
-    return () => {
-      if (chartContainerRef.current) {
-        resizeObserver.unobserve(chartContainerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
+  // Function to initialize the chart
+  const initializeChart = () => {
     const chart = createChart(chartContainerRef.current, {
       width: chartWidth,
       height: chartHeight,
@@ -108,22 +93,22 @@ const HistogramChart = ({
       downColor: 'red',
     });
 
-    const vwap_line = chart.addLineSeries({
+    const vwapLine = chart.addLineSeries({
       color: 'rgba(0, 0, 200, 1)',
       lineWidth: 0.9,
     });
 
-    const ema5_line = chart.addLineSeries({
+    const ema5Line = chart.addLineSeries({
       color: 'rgba(100, 100, 200, 1)',
       lineWidth: 0.6,
     });
 
-    const ema13_line = chart.addLineSeries({
+    const ema13Line = chart.addLineSeries({
       color: 'rgba(100, 100, 200, 1)',
       lineWidth: 0.6,
     });
 
-    const ema26_line = chart.addLineSeries({
+    const ema26Line = chart.addLineSeries({
       color: 'rgba(100, 100, 200, 1)',
       lineWidth: 0.6,
     });
@@ -140,39 +125,111 @@ const HistogramChart = ({
       },
     });
 
-    chart.subscribeCrosshairMove(param => {
-      if (param.time) {
-        const data = param.seriesData.get(candleStickSeries);
-        const volumeData = param.seriesData.get(histogramSeries);
-        setVolume(volumeData);
-        setCandlePrice(data);
-        setCurrentTime(param.time);
-        const coordinate = histogramSeries.priceToCoordinate(volumeData.value);
-        const shiftedCoordinate = param.point.x;
-        tooltipRef.current.style.left = shiftedCoordinate + 'px';
-        tooltipRef.current.style.top = coordinate + 'px';
+    chartInstanceRef.current = chart;
+    candleStickSeriesRef.current = candleStickSeries;
+    vwapLineRef.current = vwapLine;
+    ema5LineRef.current = ema5Line;
+    ema13LineRef.current = ema13Line;
+    ema26LineRef.current = ema26Line;
+    histogramSeriesRef.current = histogramSeries;
+  };
+
+  useEffect(() => {
+    initializeChart();
+
+    // Clean up chart instance when component unmounts
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.remove();
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (chartInstanceRef.current && data && data1 && markers) {
+      candleStickSeriesRef.current.setData(data1);
+      candleStickSeriesRef.current.setMarkers(markers);
+    }
+  }, [data1, markers]);
+
+  useEffect(() => {
+    if (chartInstanceRef.current && selectedIndicators.includes('vwap')) {
+      vwapLineRef.current.setData(vwapdata);
+    }
+  }, [selectedIndicators, vwapdata]);
+
+  useEffect(() => {
+    if (chartInstanceRef.current && selectedIndicators.includes('ema_5')) {
+      ema5LineRef.current.setData(emas);
+    }
+  }, [selectedIndicators, emas]);
+
+  useEffect(() => {
+    if (chartInstanceRef.current && selectedIndicators.includes('ema_13')) {
+      ema13LineRef.current.setData(ema13);
+    }
+  }, [selectedIndicators, ema13]);
+
+  useEffect(() => {
+    if (chartInstanceRef.current && selectedIndicators.includes('ema_26')) {
+      ema26LineRef.current.setData(ema26);
+    }
+  }, [selectedIndicators, ema26]);
+
+  useEffect(() => {
+    if (chartInstanceRef.current) {
+      const chart = chartInstanceRef.current;
+
+      const crosshairMoveHandler = param => {
+        if (param.time) {
+          const data = param.seriesData.get(candleStickSeriesRef.current);
+          const volumeData = param.seriesData.get(histogramSeriesRef.current);
+          setVolume(volumeData);
+          setCandlePrice(data);
+          setCurrentTime(param.time);
+          const coordinate = histogramSeriesRef.current.priceToCoordinate(volumeData.value);
+          const shiftedCoordinate = param.point.x;
+          tooltipRef.current.style.left = shiftedCoordinate + 'px';
+          tooltipRef.current.style.top = coordinate + 'px';
+        }
+      };
+
+      chart.subscribeCrosshairMove(crosshairMoveHandler);
+
+      return () => {
+        chart.unsubscribeCrosshairMove(crosshairMoveHandler);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (histogramSeriesRef.current && data) {
+      histogramSeriesRef.current.setData(data);
+    }
+  }, [data]);
+
+  const updateChartSize = () => {
+    if (chartContainerRef.current) {
+      setChartWidth(chartContainerRef.current.clientWidth);
+      setChartHeight(chartContainerRef.current.clientHeight);
+    }
+  };
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      updateChartSize();
     });
 
-    histogramSeries.setData(data);
-    candleStickSeries.setData(data1);
-    candleStickSeries.setMarkers(markers);
-
-    if (selectedIndicators.indexOf('vwap') !== -1) {
-      vwap_line.setData(vwapdata);
-    }
-    if (selectedIndicators.indexOf('ema_5') !== -1) {
-      ema5_line.setData(emas);
-    }
-    if (selectedIndicators.indexOf('ema_13') !== -1) {
-      ema13_line.setData(ema13);
-    }
-    if (selectedIndicators.indexOf('ema_26') !== -1) {
-      ema26_line.setData(ema26);
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current);
     }
 
-    return () => chart.remove();
-  }, [data, markers, selectedIndicators, chartWidth, chartHeight]);
+    return () => {
+      if (chartContainerRef.current) {
+        resizeObserver.unobserve(chartContainerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full h-full" ref={chartContainerRef} style={{ position: 'relative' }}>
