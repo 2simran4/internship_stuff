@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
+import CustomRemoveIcon from './CustomRemoveIcon'; // Assuming you have a CustomRemoveIcon component
 
 const MultiSelectWithSearch = ({ company, setCompany }) => {
   const [companyList, setCompanyList] = useState([]);
@@ -58,7 +59,40 @@ const MultiSelectWithSearch = ({ company, setCompany }) => {
         backgroundColor: 'blue',
         color: 'white'
       }
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: 'white',
+      zIndex: 9999
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? 'lightgray' : 'white',
+      color: 'black',
+      '&:hover': {
+        backgroundColor: 'lightgray'
+      }
+    }),
+    dropdownIndicator: (provided, state) => ({
+      ...provided,
+      color: state.isFocused ? 'blue' : 'gray',
+      '&:hover': {
+        color: 'blue'
+      }
+    }),
+    indicatorSeparator: (provided) => ({
+      ...provided,
+      display: 'none'
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: 'gray'
     })
+  };
+
+  // Custom components for react-select
+  const customComponents = {
+    MultiValueRemove: CustomRemoveIcon
   };
 
   return (
@@ -67,6 +101,8 @@ const MultiSelectWithSearch = ({ company, setCompany }) => {
       isMulti
       onChange={handleChange}
       styles={customStyles}
+      components={customComponents}
+      classNamePrefix="custom-select"
     />
   );
 };
