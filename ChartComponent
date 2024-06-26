@@ -1,85 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
+import axios from 'axios';
 
-// CSS for basic styling
-const styles = {
-  container: {
-    width: '450px',
-    padding: '15px',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    fontFamily: 'Arial, sans-serif'
-  },
-  label: {
-    fontSize: '18px',
-    marginBottom: '10px',
-    display: 'inline-block'
-  },
-  multiSelect: {
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  option: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '5px'
-  },
-  checkbox: {
-    marginRight: '10px'
-  }
-};
+const MultiSelectWithSearch = ({ company, setCompany }) => {
+  const [companyList, setCompanyList] = useState([]);
+  const [options, setOptions] = useState([]);
 
-const SelectIndicator = ({ options, selectedIndicators, handleChange }) => {
-  return (
-    <div style={styles.multiSelect}>
-      {options.map((option) => (
-        <div key={option.value} style={styles.option}>
-          <input
-            type="checkbox"
-            id={option.value}
-            value={option.value}
-            checked={selectedIndicators.includes(option.value)}
-            onChange={(e) => handleChange(e.target.value)}
-            style={styles.checkbox}
-          />
-          <label htmlFor={option.value}>{option.label}</label>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const Indicators = () => {
-  const [selectedIndicators, setSelectedIndicators] = useState([]);
-
-  const options = [
-    { value: 'rsi', label: 'RSI' },
-    { value: 'sma', label: 'SMA' },
-    { value: 'ema_13', label: 'EMA 13' },
-    { value: 'ema_20', label: 'EMA 20' },
-    { value: 'vwap', label: 'VWAP' },
-    { value: 'bb', label: 'Bollinger Bands' }
-  ];
+  useEffect(() => {
+    if (companyList.length > 0) {
+      const tempList = companyList.map(item => ({
+        label: item.name,
+        value: item.id,
+      }));
+      setOptions(tempList);
+    }
+  }, [companyList]);
 
   const handleChange = (value) => {
-    setSelectedIndicators((prevSelected) =>
-      prevSelected.includes(value)
-        ? prevSelected.filter((item) => item !== value)
-        : [...prevSelected, value]
-    );
+    if (value.length <= 5) {
+      setCompany(value);
+    }
+  };
+
+  // Fetching companyList data (example)
+  useEffect(() => {
+    axios.get('/api/company-list')
+      .then(response => {
+        setCompanyList(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching company list:', error);
+      });
+  }, []);
+
+  // Custom styles for react-select
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      borderColor: state.isFocused ? 'blue' : 'gray',
+      boxShadow: state.isFocused ? '0 0 0 1px blue' : provided.boxShadow,
+      '&:hover': {
+        borderColor: state.isFocused ? 'blue' : 'gray'
+      }
+    }),
+    multiValue: (provided) => ({
+      ...provided,
+      backgroundColor: 'lightblue'
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      color: 'blue'
+    }),
+    multiValueRemove: (provided) => ({
+      ...provided,
+      color: 'blue',
+      ':hover': {
+        backgroundColor: 'blue',
+        color: 'white'
+      }
+    })
   };
 
   return (
-    <div style={styles.container}>
-      <label htmlFor="indicator-select" style={styles.label}>
-        Choose Indicators
-      </label>
-      <SelectIndicator
-        options={options}
-        selectedIndicators={selectedIndicators}
-        handleChange={handleChange}
-      />
-    </div>
+    <Select
+      options={options}
+      isMulti
+      onChange={handleChange}
+      styles={customStyles}
+    />
   );
 };
 
-export default Indicators;
+export default MultiSelectWithSearch;
