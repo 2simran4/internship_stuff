@@ -1,0 +1,40 @@
+import React from 'react';
+import { render, fireEvent, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import SearchBar from './SearchBar';
+
+test('renders search bar and handles user input', () => {
+  const handleSearch = jest.fn();
+
+  render(<SearchBar onSearch={handleSearch} />);
+
+  const input = screen.getByLabelText('Search');
+  const button = screen.getByText('Search');
+
+  // Simulate user typing
+  fireEvent.change(input, { target: { value: 'test query' } });
+  expect(input.value).toBe('test query');
+
+  // Simulate form submission
+  fireEvent.click(button);
+
+  // Verify that the handleSearch function was called with the correct query
+  expect(handleSearch).toHaveBeenCalledWith('test query');
+  expect(handleSearch).toHaveBeenCalledTimes(1);
+});
+
+test('handles Enter key press to submit the form', () => {
+  const handleSearch = jest.fn();
+
+  render(<SearchBar onSearch={handleSearch} />);
+
+  const input = screen.getByLabelText('Search');
+
+  // Simulate user typing and pressing Enter key
+  fireEvent.change(input, { target: { value: 'another query' } });
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+  // Verify that the handleSearch function was called with the correct query
+  expect(handleSearch).toHaveBeenCalledWith('another query');
+  expect(handleSearch).toHaveBeenCalledTimes(1);
+});
