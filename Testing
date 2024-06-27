@@ -93,3 +93,98 @@ describe('SearchBar', () => {
         });
     });
 });
+
+import React, { useState } from 'react';
+import Select from 'react-select';
+
+const MultiSelectDropdown = ({selectedOptions, setSelectedOptions}) => {
+
+    const options = [
+        { value: 'item1', label: 'Item 1' },
+        { value: 'item2', label: 'Item 2' },
+        { value: 'item3', label: 'Item 3' },
+    ];
+
+    const handleChange = (selected) => {
+        setSelectedOptions(selected);
+    };
+
+    return (
+        <Select
+            isMulti
+            value={selectedOptions}
+            onChange={handleChange}
+            options={options}
+            placeholder="Select items..."
+        />
+    );
+};
+
+export default MultiSelectDropdown;
+
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import MultiSelectDropdown from './MultiSelectDropdown'; // Adjust the path as necessary
+import userEvent from '@testing-library/user-event';
+
+describe('MultiSelectDropdown', () => {
+    test('renders MultiSelectDropdown component', () => {
+        const selectedOptions = [];
+        const setSelectedOptions = jest.fn();
+
+        render(<MultiSelectDropdown selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />);
+        expect(screen.getByText('Select items...')).toBeInTheDocument();
+    });
+
+    test('selects multiple options', async () => {
+        const selectedOptions = [];
+        const setSelectedOptions = jest.fn();
+
+        render(<MultiSelectDropdown selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />);
+        
+        const placeholderText = screen.getByText('Select items...');
+        expect(placeholderText).toBeInTheDocument();
+
+        // Open the dropdown
+        fireEvent.mouseDown(placeholderText);
+
+        // Select the first option
+        const firstOption = screen.getByText('Item 1');
+        userEvent.click(firstOption);
+
+        // Verify setSelectedOptions was called with the selected option
+        expect(setSelectedOptions).toHaveBeenCalledWith([{ value: 'item1', label: 'Item 1' }]);
+
+        // Open the dropdown again
+        fireEvent.mouseDown(placeholderText);
+
+        // Select the second option
+        const secondOption = screen.getByText('Item 2');
+        userEvent.click(secondOption);
+
+        // Verify setSelectedOptions was called with both selected options
+        expect(setSelectedOptions).toHaveBeenCalledWith([
+            { value: 'item1', label: 'Item 1' },
+            { value: 'item2', label: 'Item 2' }
+        ]);
+    });
+
+    test('deselects an option', async () => {
+        const selectedOptions = [{ value: 'item1', label: 'Item 1' }];
+        const setSelectedOptions = jest.fn();
+
+        render(<MultiSelectDropdown selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />);
+        
+        const selectedItem = screen.getByText('Item 1');
+        expect(selectedItem).toBeInTheDocument();
+
+        // Deselect the first option
+        const removeFirstOption = selectedItem.closest('.react-select__multi-value__remove');
+        userEvent.click(removeFirstOption);
+
+        // Verify setSelectedOptions was called with an empty array
+        expect(setSelectedOptions).toHaveBeenCalledWith([]);
+    });
+});
+
