@@ -1,7 +1,16 @@
+// searchbar.test.js
+
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import SearchBar from './SearchBar';
+
+// Mock Axios
+jest.mock('axios', () => ({
+  get: jest.fn(() => Promise.resolve({ data: {} })),
+  post: jest.fn(() => Promise.resolve({ data: {} })),
+  // Add more Axios methods as needed for your component
+}));
 
 describe('SearchBar Component', () => {
   const handleSearch = jest.fn();
