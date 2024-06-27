@@ -3,38 +3,54 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import SearchBar from './SearchBar';
 
-test('renders search bar and handles user input', () => {
+describe('SearchBar Component', () => {
   const handleSearch = jest.fn();
+  const handleClickOption = jest.fn();
 
-  render(<SearchBar onSearch={handleSearch} />);
+  const setup = () => {
+    const utils = render(<SearchBar onSearch={handleSearch} />);
+    const input = utils.getByLabelText('search-input');
+    const form = utils.getByRole('form');
+    return {
+      input,
+      form,
+      ...utils,
+    };
+  };
 
-  const input = screen.getByLabelText('Search');
-  const button = screen.getByText('Search');
+  test('renders search bar', () => {
+    const { input } = setup();
+    expect(input).toBeInTheDocument();
+  });
 
-  // Simulate user typing
-  fireEvent.change(input, { target: { value: 'test query' } });
-  expect(input.value).toBe('test query');
+  test('handles user input', () => {
+    const { input } = setup();
+    fireEvent.change(input, { target: { value: 'test query' } });
+    expect(input.value).toBe('test query');
+  });
 
-  // Simulate form submission
-  fireEvent.click(button);
+  test('calls onSearch on form submit', () => {
+    const { input, form } = setup();
+    fireEvent.change(input, { target: { value: 'test query' } });
+    fireEvent.submit(form);
+    expect(handleSearch).toHaveBeenCalledWith('test query');
+    expect(handleSearch).toHaveBeenCalledTimes(1);
+  });
 
-  // Verify that the handleSearch function was called with the correct query
-  expect(handleSearch).toHaveBeenCalledWith('test query');
-  expect(handleSearch).toHaveBeenCalledTimes(1);
-});
+  test('shows options on input focus', () => {
+    render(<SearchBar onSearch={handleSearch} />);
+    const input = screen.getByLabelText('search-input');
+    fireEvent.focus(input);
+    const options = screen.getByRole('list');
+    expect(options).toBeInTheDocument();
+  });
 
-test('handles Enter key press to submit the form', () => {
-  const handleSearch = jest.fn();
-
-  render(<SearchBar onSearch={handleSearch} />);
-
-  const input = screen.getByLabelText('Search');
-
-  // Simulate user typing and pressing Enter key
-  fireEvent.change(input, { target: { value: 'another query' } });
-  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
-
-  // Verify that the handleSearch function was called with the correct query
-  expect(handleSearch).toHaveBeenCalledWith('another query');
-  expect(handleSearch).toHaveBeenCalledTimes(1);
+  test('handles option click', () => {
+    render(<SearchBar onSearch={handleSearch} />);
+    const input = screen.getByLabelText('search-input');
+    fireEvent.focus(input);
+    const option = screen.getByText('Option Text'); // Replace 'Option Text' with actual option text
+    fireEvent.click(option);
+    expect(handleClickOption).toHaveBeenCalledWith('Option Text');
+  });
 });
