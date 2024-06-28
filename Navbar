@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 const SingleSelectDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
+    const [strategy, setStrategy] = useState(null); // Add state for strategy
     const dropdownRef = useRef(null);
 
     const toggleDropdown = () => {
@@ -34,6 +35,8 @@ const SingleSelectDropdown = () => {
     const handleOptionSelect = (option) => {
         setSelectedOption(option);
         setIsOpen(false);
+        setStrategy(option); // Set the strategy based on the selected option
+        console.log(`Selected option: ${option}, Strategy set to: ${option}`);
     };
 
     return (
@@ -55,7 +58,7 @@ const SingleSelectDropdown = () => {
                     style={{ top: 'calc(100% + 5px)', maxHeight: '300px', overflowY: 'auto' }}
                 >
                     <div className="flex flex-col items-start p-2">
-                        {['Option 1', 'Option 2', 'Option 3'].map((option, index) => (
+                        {['Strategy 1', 'Strategy 2', 'Strategy 3'].map((option, index) => (
                             <button
                                 key={index}
                                 className="block w-full text-left p-2 hover:bg-gray-100"
