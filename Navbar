@@ -1,77 +1,86 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const SingleSelectDropdown = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState(null);
-    const [strategy, setStrategy] = useState(null); // Add state for strategy
-    const dropdownRef = useRef(null);
+const MyComponent = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
-    const toggleDropdown = () => {
-        setIsOpen(!isOpen);
+  const [sizes, setSizes] = useState({
+    left: { width: (3 * window.innerWidth) / 4 - 10, height: window.innerHeight },
+    right: { width: window.innerWidth / 4 - 5, height: window.innerHeight },
+    leftTop: { width: (3 * window.innerWidth) / 4 - 10, height: (2 * window.innerHeight) / 5 },
+    leftBottom1: { width: (3 * window.innerWidth) / 4 - 10, height: window.innerHeight / 5 },
+    leftBottom2: { width: (3 * window.innerWidth) / 4 - 10, height: window.innerHeight / 5 },
+    leftBottom3: { width: (3 * window.innerWidth) / 4 - 10, height: window.innerHeight / 5 },
+    rightTop: { width: window.innerWidth / 4 - 5, height: window.innerHeight / 2 },
+    rightBottom: { width: window.innerWidth / 4 - 5, height: window.innerHeight / 2 },
+  });
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [showWatchlist, setShowWatchlist] = useState(false); // Assuming initial value
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     };
 
-    const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-            setIsOpen(false);
-        }
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
     };
+  }, []);
 
-    const handleFocusOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-            setIsOpen(false);
-        }
-    };
+  useEffect(() => {
+    if (windowSize.width < 1000) {
+      setIsMobile(true);
+      if (!showWatchlist) {
+        setSizes({
+          left: { width: windowSize.width, height: windowSize.height },
+          right: { width: 0, height: windowSize.height },
+          leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
+          leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+          rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+        });
+      } else {
+        setSizes({
+          left: { width: 0, height: windowSize.height },
+          right: { width: windowSize.width, height: windowSize.height },
+          leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
+          leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+          rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+          rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+        });
+      }
+    } else {
+      setIsMobile(false);
+      setSizes({
+        left: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height },
+        right: { width: windowSize.width / 4 - 5, height: windowSize.height },
+        leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
+        leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+        leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+        leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+        rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+        rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+      });
+    }
+  }, [windowSize, showWatchlist]);
 
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('focusin', handleFocusOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('focusin', handleFocusOutside);
-        };
-    }, []);
-
-    const handleOptionSelect = (option) => {
-        setSelectedOption(option);
-        setIsOpen(false);
-        setStrategy(option); // Set the strategy based on the selected option
-        console.log(`Selected option: ${option}, Strategy set to: ${option}`);
-    };
-
-    return (
-        <div className="relative" ref={dropdownRef}>
-            <div className="relative inline-block p-3">
-                <div
-                    className="border border-gray-300 rounded-md p-2 cursor-pointer flex items-center justify-between"
-                    onClick={toggleDropdown}
-                >
-                    <span className="text-sm font-medium text-gray-700">
-                        {selectedOption || 'Select Option'}
-                    </span>
-                    <span className={`arrow ${isOpen ? 'open' : ''}`}>{isOpen ? '▲' : '▼'}</span>
-                </div>
-            </div>
-            {isOpen && (
-                <div
-                    className="absolute z-10 w-full border border-gray-300 bg-white rounded-md shadow-lg"
-                    style={{ top: 'calc(100% + 5px)', maxHeight: '300px', overflowY: 'auto' }}
-                >
-                    <div className="flex flex-col items-start p-2">
-                        {['Strategy 1', 'Strategy 2', 'Strategy 3'].map((option, index) => (
-                            <button
-                                key={index}
-                                className="block w-full text-left p-2 hover:bg-gray-100"
-                                onClick={() => handleOptionSelect(option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <div>
+      {/* Your component JSX goes here, utilizing the `sizes` state for styling */}
+    </div>
+  );
 };
 
-export default SingleSelectDropdown;
+export default MyComponent;
