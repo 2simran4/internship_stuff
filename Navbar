@@ -17,9 +17,6 @@ const MyComponent = () => {
     rightBottom: { width: window.innerWidth / 4 - 5, height: window.innerHeight / 2 },
   });
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-  const [showWatchlist, setShowWatchlist] = useState(false); // Assuming initial value
-
   useEffect(() => {
     const handleResize = () => {
       setWindowSize({
@@ -36,49 +33,28 @@ const MyComponent = () => {
   }, []);
 
   useEffect(() => {
-    if (windowSize.width < 1000) {
-      setIsMobile(true);
-      if (!showWatchlist) {
-        setSizes({
-          left: { width: windowSize.width, height: windowSize.height },
-          right: { width: 0, height: windowSize.height },
-          leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
-          leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-          rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-        });
-      } else {
-        setSizes({
-          left: { width: 0, height: windowSize.height },
-          right: { width: windowSize.width, height: windowSize.height },
-          leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
-          leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-          rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-          rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-        });
-      }
-    } else {
-      setIsMobile(false);
-      setSizes({
-        left: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height },
-        right: { width: windowSize.width / 4 - 5, height: windowSize.height },
-        leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
-        leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-        leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-        leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
-        rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-        rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
-      });
-    }
-  }, [windowSize, showWatchlist]);
+    setSizes({
+      left: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height },
+      right: { width: windowSize.width / 4 - 5, height: windowSize.height },
+      leftTop: { width: (3 * windowSize.width) / 4 - 10, height: (2 * windowSize.height) / 5 },
+      leftBottom1: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+      leftBottom2: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+      leftBottom3: { width: (3 * windowSize.width) / 4 - 10, height: windowSize.height / 5 },
+      rightTop: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+      rightBottom: { width: windowSize.width / 4 - 5, height: windowSize.height / 2 },
+    });
+  }, [windowSize]);
 
   return (
     <div>
-      {/* Your component JSX goes here, utilizing the `sizes` state for styling */}
+      <div style={{ ...sizes.left, background: 'lightblue' }}>Left</div>
+      <div style={{ ...sizes.right, background: 'lightgreen' }}>Right</div>
+      <div style={{ ...sizes.leftTop, background: 'lightcoral' }}>Left Top</div>
+      <div style={{ ...sizes.leftBottom1, background: 'lightyellow' }}>Left Bottom 1</div>
+      <div style={{ ...sizes.leftBottom2, background: 'lightpink' }}>Left Bottom 2</div>
+      <div style={{ ...sizes.leftBottom3, background: 'lightgrey' }}>Left Bottom 3</div>
+      <div style={{ ...sizes.rightTop, background: 'lightseagreen' }}>Right Top</div>
+      <div style={{ ...sizes.rightBottom, background: 'lightsteelblue' }}>Right Bottom</div>
     </div>
   );
 };
