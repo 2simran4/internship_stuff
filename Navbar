@@ -1,129 +1,33 @@
-import React from 'react';
-import './HighLowRatingStocks.css';
+import React, { useState, useRef, useEffect } from 'react';
 
-const HighLowRatingStocks = () => {
-  // Dummy data for stocks
-  const highRatingStocks = [
-    { name: 'Company A', rating: 9.2, price: 120 },
-    { name: 'Company B', rating: 8.7, price: 150 },
-    { name: 'Company C', rating: 9.5, price: 200 },
-    { name: 'Company D', rating: 8.9, price: 180 },
-    { name: 'Company E', rating: 9.1, price: 210 },
-    { name: 'Company F', rating: 8.8, price: 170 },
-    { name: 'Company G', rating: 9.0, price: 220 },
-    { name: 'Company H', rating: 9.4, price: 240 },
-    { name: 'Company I', rating: 8.6, price: 130 },
-    { name: 'Company J', rating: 9.3, price: 260 }
-  ];
+const MultiSelectDropdown = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-  const lowRatingStocks = [
-    { name: 'Company X', rating: 3.2, price: 30 },
-    { name: 'Company Y', rating: 4.1, price: 45 },
-    { name: 'Company Z', rating: 2.9, price: 25 },
-    { name: 'Company W', rating: 3.5, price: 35 },
-    { name: 'Company V', rating: 3.0, price: 40 },
-    { name: 'Company U', rating: 4.0, price: 50 },
-    { name: 'Company T', rating: 3.3, price: 28 },
-    { name: 'Company S', rating: 2.8, price: 20 },
-    { name: 'Company R', rating: 4.2, price: 55 },
-    { name: 'Company Q', rating: 3.4, price: 32 }
-  ];
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen);
+    };
 
-  return (
-    <div className="stock-tables">
-      <div>
-        <h2>High Rating Stocks</h2>
-        <table className="styled-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Rating</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {highRatingStocks.map((stock, index) => (
-              <tr key={index}>
-                <td>{stock.name}</td>
-                <td>{stock.rating}</td>
-                <td>${stock.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    const handleBlur = (event) => {
+        if (!dropdownRef.current.contains(event.relatedTarget)) {
+            setIsOpen(false);
+        }
+    };
 
-      <div>
-        <h2>Low Rating Stocks</h2>
-        <table className="styled-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Rating</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lowRatingStocks.map((stock, index) => (
-              <tr key={index}>
-                <td>{stock.name}</td>
-                <td>{stock.rating}</td>
-                <td>${stock.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+    return (
+        <div className="dropdown" ref={dropdownRef} onBlur={handleBlur}>
+            <button onClick={toggleDropdown} onFocus={toggleDropdown}>
+                Select Options
+            </button>
+            {isOpen && (
+                <div className="dropdown-content">
+                    <label><input type="checkbox" /> Option 1</label><br />
+                    <label><input type="checkbox" /> Option 2</label><br />
+                    <label><input type="checkbox" /> Option 3</label>
+                </div>
+            )}
+        </div>
+    );
+};
 
-export default HighLowRatingStocks;
-body {
-  font-family: Arial, sans-serif;
-}
-
-.stock-tables {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-}
-
-h2 {
-  text-align: center;
-}
-
-.styled-table {
-  border-collapse: collapse;
-  margin: 25px 0;
-  font-size: 0.9em;
-  min-width: 300px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-.styled-table thead tr {
-  background-color: #009879;
-  color: #ffffff;
-  text-align: left;
-}
-
-.styled-table th,
-.styled-table td {
-  padding: 12px 15px;
-}
-
-.styled-table tbody tr {
-  border-bottom: 1px solid #dddddd;
-}
-
-.styled-table tbody tr:nth-of-type(even) {
-  background-color: #f3f3f3;
-}
-
-.styled-table tbody tr:last-of-type {
-  border-bottom: 2px solid #009879;
-}
-
-.styled-table tbody tr:hover {
-  background-color: #f1f1f1;
-}
+export default MultiSelectDropdown;
