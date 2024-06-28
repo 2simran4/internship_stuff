@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const Indicators = () => {
+const SingleSelectDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedOption, setSelectedOption] = useState(null);
     const dropdownRef = useRef(null);
 
     const toggleDropdown = () => {
@@ -30,6 +31,11 @@ const Indicators = () => {
         };
     }, []);
 
+    const handleOptionSelect = (option) => {
+        setSelectedOption(option);
+        setIsOpen(false);
+    };
+
     return (
         <div className="relative" ref={dropdownRef}>
             <div className="relative inline-block p-3">
@@ -37,13 +43,8 @@ const Indicators = () => {
                     className="border border-gray-300 rounded-md p-2 cursor-pointer flex items-center justify-between"
                     onClick={toggleDropdown}
                 >
-                    <span className="text-sm font-medium text-gray-700" style={{ display: 'flex', flexDirection: 'row', gap: '3px' }}>
-                        <img
-                            src="https://img.icons8.com/?size=100&id=375&format=png&color=000000"
-                            style={{ width: '20px', height: '20px' }}
-                            alt="icon"
-                        />
-                        Indicators
+                    <span className="text-sm font-medium text-gray-700">
+                        {selectedOption || 'Select Option'}
                     </span>
                     <span className={`arrow ${isOpen ? 'open' : ''}`}>{isOpen ? '▲' : '▼'}</span>
                 </div>
@@ -53,23 +54,21 @@ const Indicators = () => {
                     className="absolute z-10 w-full border border-gray-300 bg-white rounded-md shadow-lg"
                     style={{ top: 'calc(100% + 5px)', maxHeight: '300px', overflowY: 'auto' }}
                 >
-                    <div className="flex items-center mb-2 ml-3">
-                        <input
-                            type="checkbox"
-                            id="select-all"
-                            className="mr-2 cursor-pointer"
-                            checked={false} // Change this line as per your requirement
-                            onChange={() => {}} // Change this line as per your requirement
-                        />
-                        <label htmlFor="select-all" className="text-sm font-medium text-gray-700 cursor-pointer">
-                            Select All
-                        </label>
+                    <div className="flex flex-col items-start p-2">
+                        {['Option 1', 'Option 2', 'Option 3'].map((option, index) => (
+                            <button
+                                key={index}
+                                className="block w-full text-left p-2 hover:bg-gray-100"
+                                onClick={() => handleOptionSelect(option)}
+                            >
+                                {option}
+                            </button>
+                        ))}
                     </div>
-                    {/* Add more checkboxes here as needed */}
                 </div>
             )}
         </div>
     );
 };
 
-export default Indicators;
+export default SingleSelectDropdown;
