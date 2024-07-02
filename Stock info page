@@ -1,1 +1,44 @@
 
+import React, { useState, useEffect } from 'react';
+import socketIOClient from "socket.io-client";
+
+const ENDPOINT = "http://127.0.0.1:4001"; // Replace with your endpoint
+
+const StockPriceAnalysis = () => {
+    const [companyData, setCompanyData] = useState({});
+
+    const updateData = (companyId, closeVal, timeStamp) => {
+        setCompanyData(prevData => {
+            // Copy the existing state
+            const newData = { ...prevData };
+            // If company exists, append new data, otherwise create new list
+            if (newData[companyId]) {
+                newData[companyId].push({ value: closeVal, time: timeStamp });
+            } else {
+                newData[companyId] = [{ value: closeVal, time: timeStamp }];
+            }
+            return newData;
+        });
+    };
+
+    useEffect(() => {
+        const socket = socketIOClient(ENDPOINT);
+
+        socket.on("getOverview", data => {
+            updateData(data.companyId, data.close, data.timestamp);
+        });
+
+        // Clean up on unmount
+        return () => socket.disconnect();
+    }, []);
+
+    return (
+        <div>
+            <h1>Stock Price Analysis</h1>
+            {/* Render company data */}
+            <pre>{JSON.stringify(companyData, null, 2)}</pre>
+        </div>
+    );
+};
+
+export default StockPriceAnalysis;
