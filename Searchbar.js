@@ -1,9 +1,71 @@
+// Modal.js
+import React from 'react';
+import './Modal.css';
+
+const Modal = ({ show, onClose, content }) => {
+    if (!show) {
+        return null;
+    }
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <h2>Indicator Information</h2>
+                <p>{content}</p>
+                <button onClick={onClose} className="close-btn">Close</button>
+            </div>
+        </div>
+    );
+};
+
+export default Modal;
+
+/* Modal.css */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    width: 300px;
+    max-width: 80%;
+    text-align: center;
+}
+
+.close-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    background-color: #2980b9;
+}
+
 // Indicators.js
 import React, { useState } from 'react';
+import Modal from './Modal';
 
 const Indicators = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedIndicators, setSelectedIndicators] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState('');
 
     const indicators = ["rsi", "macd", "obv", "ema_5", "ema_13", "ema_26", "vwap", "bb"];
 
@@ -32,7 +94,12 @@ const Indicators = () => {
     };
 
     const showInfo = (indicator) => {
-        alert(`Information about ${indicator}`);
+        setModalContent(`Information about ${indicator}`);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
     };
 
     return (
@@ -80,8 +147,10 @@ const Indicators = () => {
                     </button>
                 </div>
             )}
+            <Modal show={isModalOpen} onClose={closeModal} content={modalContent} />
         </div>
     );
 };
 
 export default Indicators;
+
