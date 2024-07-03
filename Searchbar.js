@@ -1,75 +1,87 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './SearchBar.css'; // Import the CSS for styling
+// Indicators.js
+import React, { useState } from 'react';
 
-const SearchBar = () => {
-    const [inputValue, setInputValue] = useState('');
-    const [isDropdownVisible, setDropdownVisible] = useState(false);
-    const [filteredItems, setFilteredItems] = useState([]);
-    const searchContainerRef = useRef(null);
+const Indicators = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedIndicators, setSelectedIndicators] = useState([]);
 
-    const items = [
-        'Item 1',
-        'Item 2',
-        'Item 3',
-        'Item 4',
-        'Item 5',
-        'Item 6',
-        'Item 7',
-    ];
+    const indicators = ["rsi", "macd", "obv", "ema_5", "ema_13", "ema_26", "vwap", "bb"];
 
-    const handleInputChange = (event) => {
-        const value = event.target.value;
-        setInputValue(value);
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen);
+    };
 
-        if (value) {
-            const filtered = items.filter(item =>
-                item.toLowerCase().includes(value.toLowerCase())
-            );
-            setFilteredItems(filtered);
-            setDropdownVisible(true);
+    const selectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIndicators(indicators);
         } else {
-            setDropdownVisible(false);
+            setSelectedIndicators([]);
         }
     };
 
-    const handleClickOutside = (event) => {
-        if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-            setDropdownVisible(false);
+    const toggleIndicator = (indicator) => {
+        if (selectedIndicators.includes(indicator)) {
+            setSelectedIndicators(selectedIndicators.filter(i => i !== indicator));
+        } else {
+            setSelectedIndicators([...selectedIndicators, indicator]);
         }
     };
 
-    useEffect(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    const clearSelection = () => {
+        setSelectedIndicators([]);
+    };
+
+    const showInfo = (indicator) => {
+        alert(`Information about ${indicator}`);
+    };
 
     return (
-        <div className="search-container" ref={searchContainerRef}>
-            <i className="fas fa-search search-icon"></i>
-            <input
-                type="text"
-                className="search-input"
-                value={inputValue}
-                onChange={handleInputChange}
-                placeholder="Search..."
-            />
-            {isDropdownVisible && (
-                <div className="dropdown-content">
-                    {filteredItems.length > 0 ? (
-                        filteredItems.map((item, index) => (
-                            <div key={index} className="dropdown-item">
-                                {item}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="dropdown-item">No results found</div>
-                    )}
+        <div>
+            <button onClick={toggleDropdown}>Dropdown</button>
+            {isOpen && (
+                <div className="absolute z-10 w-full border border-gray-300 bg-white rounded-md" style={{ top: 'calc(100% + 8px)', maxHeight: '300px', overflowY: 'auto' }}>
+                    <div className="flex items-center mb-2 ml-3">
+                        <input
+                            type="checkbox"
+                            id="select-all"
+                            className="cursor-pointer"
+                            checked={selectedIndicators.length === indicators.length}
+                            onChange={selectAll}
+                        />
+                        <label htmlFor="select-all" className="text-sm font-medium text-gray-700 cursor-pointer">
+                            Select All
+                        </label>
+                    </div>
+                    {indicators.map(indicator => (
+                        <div key={indicator} className="flex items-center mb-1 ml-3">
+                            <input
+                                type="checkbox"
+                                id={indicator}
+                                className="cursor-pointer"
+                                checked={selectedIndicators.includes(indicator)}
+                                onChange={() => toggleIndicator(indicator)}
+                            />
+                            <label htmlFor={indicator} className="text-sm font-medium text-gray-700 cursor-pointer">
+                                {indicator.toUpperCase()}
+                            </label>
+                            <button
+                                className="ml-2 text-blue-500 cursor-pointer"
+                                onClick={() => showInfo(indicator)}
+                            >
+                                i
+                            </button>
+                        </div>
+                    ))}
+                    <button
+                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
+                        onClick={clearSelection}
+                    >
+                        Clear Selection
+                    </button>
                 </div>
             )}
         </div>
     );
 };
 
-export default SearchBar;
+export default Indicators;
