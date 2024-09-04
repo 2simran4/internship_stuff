@@ -1,0 +1,262 @@
+def encrypt(text, shift):
+    result = ""
+    # Traverse the text
+    for i in range(len(text)):
+        char = text[i]
+
+        # Encrypt uppercase characters
+        if char.isupper():
+            result += chr((ord(char) + shift - 65) % 26 + 65)
+        # Encrypt lowercase characters
+        elif char.islower():
+            result += chr((ord(char) + shift - 97) % 26 + 97)
+        else:
+            # If it's not an alphabetic character, don't change it
+            result += char
+    return result
+
+def decrypt(text, shift):
+    return encrypt(text, -shift)
+
+# Example usage
+plaintext = "Hello, World!"
+shift = 3
+
+ciphertext = encrypt(plaintext, shift)
+print(f"Encrypted: {ciphertext}")
+
+decrypted_text = decrypt(ciphertext, shift)
+print(f"Decrypted: {decrypted_text}")
+
+import socket
+
+def decrypt(text, shift):
+    def encrypt(text, shift):
+        result = ""
+        for i in range(len(text)):
+            char = text[i]
+            if char.isupper():
+                result += chr((ord(char) + shift - 65) % 26 + 65)
+            elif char.islower():
+                result += chr((ord(char) + shift - 97) % 26 + 97)
+            else:
+                result += char
+        return result
+    
+    return encrypt(text, -shift)
+
+def start_server(host='localhost', port=65432):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        print(f"Server listening on {host}:{port}")
+        
+        conn, addr = s.accept()
+        with conn:
+            print(f"Connected by {addr}")
+            encrypted_data = conn.recv(1024).decode()
+            print(f"Received encrypted data: {encrypted_data}")
+            
+            decrypted_data = decrypt(encrypted_data, shift=3)
+            print(f"Decrypted data: {decrypted_data}")
+
+if __name__ == "__main__":
+    start_server()import socket
+
+def encrypt(text, shift):
+    result = ""
+    for i in range(len(text)):
+        char = text[i]
+        if char.isupper():
+            result += chr((ord(char) + shift - 65) % 26 + 65)
+        elif char.islower():
+            result += chr((ord(char) + shift - 97) % 26 + 97)
+        else:
+            result += char
+    return result
+
+def send_data_to_server(host='localhost', port=65432):
+    plaintext = "Hello, World!"
+    shift = 3
+    encrypted_data = encrypt(plaintext, shift)
+    print(f"Encrypted data: {encrypted_data}")
+    
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.sendall(encrypted_data.encode())
+
+if __name__ == "__main__":
+    send_data_to_server()
+
+
+
+import socket
+
+def decrypt_vigenere(ciphertext, keyword):
+    keyword = keyword.lower()
+    plaintext = []
+    keyword_index = 0
+
+    for char in ciphertext:
+        if char.isalpha():
+            shift = ord(keyword[keyword_index]) - ord('a')
+            if char.isupper():
+                offset = ord('A')
+            else:
+                offset = ord('a')
+            
+            decrypted_char = chr((ord(char) - shift - offset) % 26 + offset)
+            plaintext.append(decrypted_char)
+            keyword_index = (keyword_index + 1) % len(keyword)
+        else:
+            plaintext.append(char)
+
+    return ''.join(plaintext)
+
+def start_server(host='localhost', port=65432):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        print(f"Server listening on {host}:{port}")
+        
+        conn, addr = s.accept()
+        with conn:
+            print(f"Connected by {addr}")
+            encrypted_data = conn.recv(1024).decode()
+            print(f"Received encrypted data: {encrypted_data}")
+            
+            keyword = "KEYWORD"  # The keyword must be the same as the one used by the client
+            decrypted_data = decrypt_vigenere(encrypted_data, keyword)
+            print(f"Decrypted data: {decrypted_data}")
+
+if __name__ == "__main__":
+    start_server()
+import socket
+
+def encrypt_vigenere(plaintext, keyword):
+    keyword = keyword.lower()
+    ciphertext = []
+    keyword_index = 0
+
+    for char in plaintext:
+        if char.isalpha():
+            shift = ord(keyword[keyword_index]) - ord('a')
+            if char.isupper():
+                offset = ord('A')
+            else:
+                offset = ord('a')
+            
+            encrypted_char = chr((ord(char) + shift - offset) % 26 + offset)
+            ciphertext.append(encrypted_char)
+            keyword_index = (keyword_index + 1) % len(keyword)
+        else:
+            ciphertext.append(char)
+
+    return ''.join(ciphertext)
+
+def send_data_to_server(host='localhost', port=65432):
+    plaintext = "Hello, World!"
+    keyword = "KEYWORD"  # The keyword used for encryption
+    encrypted_data = encrypt_vigenere(plaintext, keyword)
+    print(f"Encrypted data: {encrypted_data}")
+    
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.sendall(encrypted_data.encode())
+
+if __name__ == "__main__":
+    send_data_to_server()
+
+
+import numpy as np
+import socket
+
+def mod_inverse(a, m):
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+def decrypt_hill(ciphertext, key_matrix):
+    n = len(key_matrix)
+    determinant = int(np.round(np.linalg.det(key_matrix)))  # determinant of the key matrix
+    determinant_inv = mod_inverse(determinant % 26, 26)     # modular inverse of the determinant
+    
+    if determinant_inv is None:
+        raise ValueError("The key matrix is not invertible.")
+    
+    adjugate = np.round(determinant * np.linalg.inv(key_matrix)).astype(int) % 26
+    inverse_key_matrix = (determinant_inv * adjugate) % 26  # inverse key matrix modulo 26
+
+    ciphertext_vector = [ord(c) - ord('A') for c in ciphertext]
+    plaintext_vector = np.dot(inverse_key_matrix, ciphertext_vector) % 26
+
+    plaintext = ''.join(chr(int(c) + ord('A')) for c in plaintext_vector)
+    return plaintext
+
+def start_server(host='localhost', port=65432):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        print(f"Server listening on {host}:{port}")
+        
+        conn, addr = s.accept()
+        with conn:
+            print(f"Connected by {addr}")
+            encrypted_data = conn.recv(1024).decode()
+            print(f"Received encrypted data: {encrypted_data}")
+            
+            # Example 2x2 key matrix for decryption
+            key_matrix = np.array([[6, 24], [1, 13]])
+            decrypted_data = decrypt_hill(encrypted_data, key_matrix)
+            print(f"Decrypted data: {decrypted_data}")
+
+if __name__ == "__main__":
+    start_server()
+import numpy as np
+import socket
+
+def encrypt_hill(plaintext, key_matrix):
+    n = len(key_matrix)
+    plaintext = plaintext.upper()
+
+    if len(plaintext) % n != 0:
+        raise ValueError(f"Plaintext length must be a multiple of {n}")
+
+    plaintext_vector = [ord(c) - ord('A') for c in plaintext]
+    ciphertext_vector = np.dot(key_matrix, plaintext_vector) % 26
+
+    ciphertext = ''.join(chr(int(c) + ord('A')) for c in ciphertext_vector)
+    return ciphertext
+
+def send_data_to_server(host='localhost', port=65432):
+    plaintext = "HI"  # Example plaintext
+    # Example 2x2 key matrix for encryption
+    key_matrix = np.array([[6, 24], [1, 13]])
+    encrypted_data = encrypt_hill(plaintext, key_matrix)
+    print(f"Encrypted data: {encrypted_data}")
+    
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.sendall(encrypted_data.encode())
+
+if __name__ == "__main__":
+    send_data_to_server()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
